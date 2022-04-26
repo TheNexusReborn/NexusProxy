@@ -77,5 +77,10 @@
             <type>jar</type>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>com.thenexusreborn</groupId>
+            <artifactId>NexusAPI</artifactId>
+            <version>1.0-ALPHA</version>
+        </dependency>
     </dependencies>
 </project>
