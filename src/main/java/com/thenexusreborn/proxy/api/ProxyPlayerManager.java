@@ -2,6 +2,8 @@ package com.thenexusreborn.proxy.api;
 
 import com.thenexusreborn.api.NexusAPI;
 import com.thenexusreborn.api.player.*;
+import com.thenexusreborn.api.stats.StatRegistry;
+import com.thenexusreborn.api.util.Operator;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.event.*;
 import net.md_5.bungee.api.plugin.Listener;
@@ -26,8 +28,19 @@ public class ProxyPlayerManager extends PlayerManager implements Listener {
                 if (!hasData(player.getUniqueId())) {
                     nexusPlayer = createPlayerData(player.getUniqueId(), player.getName());
                 } else {
-                    nexusPlayer = getNexusPlayer(player.getUniqueId());
+                    nexusPlayer = NexusAPI.getApi().getDataManager().loadPlayer(player.getUniqueId());
                 }
+                if (nexusPlayer.getFirstJoined() == 0) {
+                    nexusPlayer.setFirstJoined(System.currentTimeMillis());
+                }
+                nexusPlayer.setLastLogin(System.currentTimeMillis());
+    
+                for (String statName : StatRegistry.getStats()) {
+                    if (!nexusPlayer.hasStat(statName)) {
+                        nexusPlayer.setStat(statName, 0, Operator.ADD);
+                    }
+                }
+                
                 getPlayers().put(nexusPlayer.getUniqueId(), nexusPlayer);
             });
         }
@@ -37,8 +50,11 @@ public class ProxyPlayerManager extends PlayerManager implements Listener {
     public void onPlayerDisconnect(PlayerDisconnectEvent e) {
         NexusPlayer nexusPlayer = getPlayers().get(e.getPlayer().getUniqueId());
         if (nexusPlayer != null) {
-            saveToMySQLAsync(nexusPlayer);
             nexusPlayer.setLastLogout(System.currentTimeMillis());
+            long playTime = nexusPlayer.getLastLogout() - nexusPlayer.getLastLogin();
+            nexusPlayer.setPlayTime(nexusPlayer.getPlayTime() + (playTime / 50));
+            nexusPlayer.consolodateStats();
+            saveToMySQLAsync(nexusPlayer);
             this.players.remove(nexusPlayer.getUniqueId());
         }
     }
