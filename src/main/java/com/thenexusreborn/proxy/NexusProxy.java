@@ -18,6 +18,7 @@ public class NexusProxy extends Plugin {
         try {
             config = ConfigurationProvider.getProvider(YamlConfiguration.class).load(new File(getDataFolder(), "config.yml"));
         } catch (IOException e) {
+            e.printStackTrace();
             getLogger().severe("Could not load config file.");
             return;
         }
