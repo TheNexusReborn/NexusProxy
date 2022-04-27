@@ -32,6 +32,8 @@ public class NexusProxy extends Plugin {
         }
         
         getProxy().getPluginManager().registerListener(this, (ProxyPlayerManager) NexusAPI.getApi().getPlayerManager());
+        
+        getProxy().registerChannel("nexus");
     }
     
     public void saveDefaultConfig() {
