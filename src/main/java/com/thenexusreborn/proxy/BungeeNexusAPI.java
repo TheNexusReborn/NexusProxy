@@ -12,7 +12,7 @@ public class BungeeNexusAPI extends NexusAPI {
     private NexusProxy plugin;
     
     public BungeeNexusAPI(NexusProxy plugin) {
-        super(plugin.getLogger(), new DataManager(), new TagManager(), new ProxyPlayerManager(), new ProxyThreadFactory(plugin), new ProxyPlayerFactory(plugin));
+        super(plugin.getLogger(), new DataManager(), new TagManager(), new ProxyPlayerManager(), new ProxyThreadFactory(plugin), new ProxyPlayerFactory(plugin), new ProxyServerManager(plugin));
         this.plugin = plugin;
     }
     
