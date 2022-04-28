@@ -37,7 +37,7 @@ public class ProxyPlayerManager extends PlayerManager implements Listener {
     
                 for (String statName : StatRegistry.getStats()) {
                     if (!nexusPlayer.hasStat(statName)) {
-                        nexusPlayer.setStat(statName, 0, Operator.ADD);
+                        nexusPlayer.changeStat(statName, StatRegistry.getDefaultValue(statName), Operator.ADD);
                     }
                 }
                 
