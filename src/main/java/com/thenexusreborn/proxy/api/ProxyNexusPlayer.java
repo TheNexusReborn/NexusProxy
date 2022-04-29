@@ -13,8 +13,8 @@ public class ProxyNexusPlayer extends NexusPlayer {
         super(uniqueId, name);
     }
     
-    public ProxyNexusPlayer(UUID uniqueId, Map<Rank, Long> ranks, long firstJoined, long lastLogin, long lastLogout, long playTime, String lastKnownName, Tag tag) {
-        super(uniqueId, ranks, firstJoined, lastLogin, lastLogout, playTime, lastKnownName, tag);
+    public ProxyNexusPlayer(UUID uniqueId, Map<Rank, Long> ranks, long firstJoined, long lastLogin, long lastLogout, long playTime, String lastKnownName, Tag tag, Set<Tag> unlockedTags) {
+        super(uniqueId, ranks, firstJoined, lastLogin, lastLogout, playTime, lastKnownName, tag, unlockedTags);
     }
     
     public ProxiedPlayer getPlayer() {
