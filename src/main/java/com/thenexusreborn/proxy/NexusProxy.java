@@ -58,7 +58,7 @@ public class NexusProxy extends Plugin {
         
         getProxy().getScheduler().schedule(this, () -> {
             PlayerManager playerManager = NexusAPI.getApi().getPlayerManager();
-            for (NexusPlayer player : playerManager.getPlayers().values()) {
+            for (NexusPlayer player : new ArrayList<>(playerManager.getPlayers().values())) {
                 try (Connection connection = getConnection(); Statement statement = connection.createStatement()) {
                     ResultSet resultSet = statement.executeQuery("select ranks, unlockedTags, tag from players where uuid='" + player.getUniqueId() + "';");
                     if (resultSet.next()) {
