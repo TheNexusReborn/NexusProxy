@@ -4,7 +4,7 @@ import com.thenexusreborn.api.NexusAPI;
 import com.thenexusreborn.api.player.*;
 import com.thenexusreborn.api.tags.Tag;
 import com.thenexusreborn.proxy.api.ProxyPlayerManager;
-import com.thenexusreborn.proxy.cmds.NetworkCmd;
+import com.thenexusreborn.proxy.cmds.*;
 import com.thenexusreborn.proxy.listener.ServerPingListener;
 import com.thenexusreborn.proxy.settings.MOTD;
 import net.md_5.bungee.api.plugin.Plugin;
@@ -55,6 +55,7 @@ public class NexusProxy extends Plugin {
         getProxy().registerChannel("nexus");
         
         getProxy().getPluginManager().registerCommand(this, new NetworkCmd(this));
+        getProxy().getPluginManager().registerCommand(this, new HubCommand());
         
         getProxy().getScheduler().schedule(this, () -> {
             PlayerManager playerManager = NexusAPI.getApi().getPlayerManager();
