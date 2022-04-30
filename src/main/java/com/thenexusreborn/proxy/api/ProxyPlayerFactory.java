@@ -15,8 +15,8 @@ public class ProxyPlayerFactory extends PlayerFactory {
     }
     
     @Override
-    public NexusPlayer createPlayer(UUID uuid, Map<Rank, Long> ranks, long firstJoined, long lastLogin, long lastLogout, long playtime, String lastKnownName, Tag tag, Set<Tag> unlockedTags, int lastPlaytimeNotification) {
-        return new ProxyNexusPlayer(uuid, ranks, firstJoined, lastLogin, lastLogout, playtime, lastKnownName, tag, unlockedTags, lastPlaytimeNotification);
+    public NexusPlayer createPlayer(UUID uuid, Map<Rank, Long> ranks, long firstJoined, long lastLogin, long lastLogout, long playtime, String lastKnownName, Tag tag, Set<Tag> unlockedTags) {
+        return new ProxyNexusPlayer(uuid, ranks, firstJoined, lastLogin, lastLogout, playtime, lastKnownName, tag, unlockedTags);
     }
     
     @Override
