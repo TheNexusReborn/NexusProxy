@@ -29,11 +29,11 @@ public class ProxyServerManager extends ServerManager {
             maxPlayers = listener.getMaxPlayers();
             break;
         }
-        int multicraftId = plugin.getConfig().getInt("serverinfo.multicraftid");
-        String name = plugin.getConfig().getString("serverinfo.name");
+        int multicraftId = plugin.getConfig().getInt("serverInfo.multicraftid");
+        String name = plugin.getConfig().getString("serverInfo.name");
         int players = ProxyServer.getInstance().getOnlineCount();
         int hiddenPlayers = 0;
-        String type = plugin.getConfig().getString("serverinfo.type");
+        String type = plugin.getConfig().getString("serverInfo.type");
         String status = "loading";
         String state = "none";
         this.currentServer = new ServerInfo(multicraftId, ip, name, port, players, maxPlayers, hiddenPlayers, type, status, state);

@@ -3,3 +3,7 @@ mysql:
   user: user
   database: database
   password: password
+serverInfo:
+  serverName: Server
+  type: Default
+  multicraftid: 0
