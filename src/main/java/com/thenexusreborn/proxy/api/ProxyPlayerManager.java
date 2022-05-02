@@ -1,6 +1,6 @@
 package com.thenexusreborn.proxy.api;
 
-import com.thenexusreborn.api.NexusAPI;
+import com.thenexusreborn.api.*;
 import com.thenexusreborn.api.player.*;
 import com.thenexusreborn.api.stats.StatRegistry;
 import com.thenexusreborn.api.util.Operator;
@@ -34,6 +34,16 @@ public class ProxyPlayerManager extends PlayerManager implements Listener {
                     nexusPlayer.setFirstJoined(System.currentTimeMillis());
                 }
                 nexusPlayer.setLastLogin(System.currentTimeMillis());
+    
+                if (NexusAPI.PHASE == Phase.ALPHA) {
+                    if (!nexusPlayer.isAlpha()) {
+                        nexusPlayer.setAlpha(true);
+                    }
+                } else if (NexusAPI.PHASE == Phase.BETA) {
+                    if (!nexusPlayer.isBeta()) {
+                        nexusPlayer.setBeta(true);
+                    }
+                }
     
                 for (String statName : StatRegistry.getStats()) {
                     if (!nexusPlayer.hasStat(statName)) {
