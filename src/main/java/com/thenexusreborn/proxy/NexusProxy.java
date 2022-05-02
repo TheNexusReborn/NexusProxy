@@ -71,7 +71,7 @@ public class NexusProxy extends Plugin {
                         String rawTags = resultSet.getString("unlockedTags");
                         Set<Tag> tags = NexusAPI.getApi().getDataManager().parseTags(rawTags);
                         player.setUnlockedTags(tags);
-                        player.setTag(NexusAPI.getApi().getTagManager().getTag(resultSet.getString("tag")));
+                        player.setTag(new Tag(resultSet.getString("tag")));
                     }
                 } catch (SQLException e) {
                     e.printStackTrace();
