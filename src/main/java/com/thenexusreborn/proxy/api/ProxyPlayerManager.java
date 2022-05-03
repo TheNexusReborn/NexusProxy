@@ -44,11 +44,17 @@ public class ProxyPlayerManager extends PlayerManager implements Listener {
                         nexusPlayer.setBeta(true);
                     }
                 }
-    
+                
+                boolean addedStat = false;
                 for (String statName : StatRegistry.getStats()) {
                     if (!nexusPlayer.hasStat(statName)) {
                         nexusPlayer.changeStat(statName, StatRegistry.getDefaultValue(statName), Operator.ADD);
+                        addedStat = true;
                     }
+                }
+                
+                if (addedStat) {
+                    nexusPlayer.consolodateStats();
                 }
                 
                 getPlayers().put(nexusPlayer.getUniqueId(), nexusPlayer);
