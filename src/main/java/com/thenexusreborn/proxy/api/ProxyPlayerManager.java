@@ -58,6 +58,7 @@ public class ProxyPlayerManager extends PlayerManager implements Listener {
                 }
                 
                 getPlayers().put(nexusPlayer.getUniqueId(), nexusPlayer);
+                saveToMySQLAsync(nexusPlayer);
             });
         }
     }
