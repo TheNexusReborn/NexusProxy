@@ -14,9 +14,7 @@ import java.util.UUID;
 public class ProxyPlayerManager extends PlayerManager implements Listener {
     @Override
     public NexusPlayer createPlayerData(UUID uniqueId, String name) {
-        NexusPlayer nexusPlayer = NexusAPI.getApi().getPlayerFactory().createPlayer(uniqueId, name);
-        NexusAPI.getApi().getDataManager().pushPlayerAsync(nexusPlayer);
-        return nexusPlayer;
+        return NexusAPI.getApi().getPlayerFactory().createPlayer(uniqueId, name);
     }
     
     @EventHandler
@@ -58,7 +56,7 @@ public class ProxyPlayerManager extends PlayerManager implements Listener {
                 }
                 
                 getPlayers().put(nexusPlayer.getUniqueId(), nexusPlayer);
-                saveToMySQLAsync(nexusPlayer);
+                NexusAPI.getApi().getDataManager().pushPlayer(nexusPlayer);
             });
         }
     }

@@ -58,6 +58,8 @@ public class NexusProxy extends Plugin {
         
         getProxy().getPluginManager().registerCommand(this, new NetworkCmd(this));
         getProxy().getPluginManager().registerCommand(this, new HubCommand());
+        getProxy().getPluginManager().registerCommand(this, new CreatePlayerCmd());
+        getProxy().getPluginManager().registerCommand(this, new UpdatePlayersCmd());
         
         getProxy().getScheduler().schedule(this, () -> {
             PlayerManager playerManager = NexusAPI.getApi().getPlayerManager();
