@@ -7,6 +7,7 @@ import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.config.ListenerInfo;
 
 import java.net.*;
+import java.util.*;
 
 public class ProxyServerManager extends ServerManager {
     
@@ -37,8 +38,20 @@ public class ProxyServerManager extends ServerManager {
         String status = "loading";
         String state = "none";
         this.currentServer = new ServerInfo(multicraftId, ip, name, port, players, maxPlayers, hiddenPlayers, type, status, state);
-        if (multicraftId > 0) {
-            NexusAPI.getApi().getDataManager().pushServerInfoAsync(this.currentServer);
+        NexusAPI.getApi().getDataManager().pushServerInfoAsync(this.currentServer);
+    }
+    
+    @Override
+    public List<ServerInfo> getServers() {
+        List<ServerInfo> servers = super.getServers();
+        if (servers == null || servers.isEmpty()) {
+            ProxyServer proxyServer = ProxyServer.getInstance();
+            for (net.md_5.bungee.api.config.ServerInfo bungeeServer : proxyServer.getServers().values()) {
+                InetSocketAddress address = (InetSocketAddress) bungeeServer.getSocketAddress();
+                ServerInfo serverInfo = new ServerInfo(0, address.getHostName(), bungeeServer.getName(), address.getPort());
+                servers.add(serverInfo);
+            }
         }
+        return servers;
     }
 }
