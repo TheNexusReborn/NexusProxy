@@ -107,6 +107,8 @@ public class NexusProxy extends Plugin {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        
+        NexusAPI.getApi().getNetworkManager().close();
     }
     
     public void saveDefaultConfig() {

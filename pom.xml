@@ -81,6 +81,12 @@
             <groupId>com.thenexusreborn</groupId>
             <artifactId>NexusAPI</artifactId>
             <version>1.2-ALPHA</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>io.netty</groupId>
+                    <artifactId>netty-all</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
 </project>
