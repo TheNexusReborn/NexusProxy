@@ -74,6 +74,9 @@ public class ProxyPlayerManager extends PlayerManager implements Listener {
                 saveToMySQLAsync(nexusPlayer);
             });
             this.players.remove(nexusPlayer.getUniqueId());
+            if (nexusPlayer.getRank().ordinal() <= Rank.MEDIA.ordinal()) {
+                StaffChat.sendDisconnect(nexusPlayer);
+            }
         }
     }
 }

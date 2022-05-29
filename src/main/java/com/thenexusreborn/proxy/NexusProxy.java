@@ -1,7 +1,6 @@
 package com.thenexusreborn.proxy;
 
-import com.thenexusreborn.api.*;
-import com.thenexusreborn.api.multicraft.MulticraftAPI;
+import com.thenexusreborn.api.NexusAPI;
 import com.thenexusreborn.api.player.*;
 import com.thenexusreborn.api.server.ServerInfo;
 import com.thenexusreborn.api.tags.Tag;
@@ -41,7 +40,7 @@ public class NexusProxy extends Plugin {
         } else {
             this.motd = new MOTD("&d&lThe Nexus Reborn", "");
         }
-    
+        
         NexusAPI.setApi(new BungeeNexusAPI(this));
         try {
             NexusAPI.getApi().init();
@@ -83,11 +82,7 @@ public class NexusProxy extends Plugin {
         
         getProxy().getScheduler().schedule(this, () -> {
             ServerInfo serverInfo = NexusAPI.getApi().getServerManager().getCurrentServer();
-            if (NexusAPI.getApi().getEnvironment() != Environment.DEVELOPMENT) {
-                serverInfo.setStatus(MulticraftAPI.getInstance().getServerStatus(serverInfo.getMulticraftId()).status);
-            } else {
-                serverInfo.setStatus("online");
-            }
+            serverInfo.setStatus("online");
             serverInfo.setPlayers(getProxy().getOnlineCount());
             NexusAPI.getApi().getDataManager().pushServerInfo(serverInfo);
         }, 1L, 1L, TimeUnit.SECONDS);
@@ -105,13 +100,15 @@ public class NexusProxy extends Plugin {
                 e.printStackTrace();
             }
         }
-    
-    
+        
+        
         try {
             ConfigurationProvider.getProvider(YamlConfiguration.class).save(config, file);
         } catch (IOException e) {
             e.printStackTrace();
         }
+        
+        NexusAPI.getApi().getNetworkManager().close();
     }
     
     public void saveDefaultConfig() {

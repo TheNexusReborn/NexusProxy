@@ -37,4 +37,9 @@ public class ProxyNexusPlayer extends NexusPlayer {
             player.sendMessage(TextComponent.fromLegacyText(ChatColor.translateAlternateColorCodes('&', message)));
         }
     }
+    
+    @Override
+    public boolean isOnline() {
+        return ProxyServer.getInstance().getPlayer(this.uniqueId) != null;
+    }
 }
