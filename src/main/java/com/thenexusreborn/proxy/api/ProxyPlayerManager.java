@@ -1,9 +1,13 @@
 package com.thenexusreborn.proxy.api;
 
 import com.thenexusreborn.api.*;
+import com.thenexusreborn.api.helper.*;
 import com.thenexusreborn.api.player.*;
+import com.thenexusreborn.api.punishment.*;
 import com.thenexusreborn.api.stats.StatRegistry;
 import com.thenexusreborn.api.util.Operator;
+import net.md_5.bungee.api.ChatColor;
+import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.event.*;
 import net.md_5.bungee.api.plugin.Listener;
@@ -20,6 +24,27 @@ public class ProxyPlayerManager extends PlayerManager implements Listener {
     @EventHandler
     public void onPostLogin(PostLoginEvent e) {
         ProxiedPlayer player = e.getPlayer();
+        Punishment punishment = NexusAPI.getApi().getPunishmentManager().getPunishmentByTarget(player.getUniqueId());
+        if (punishment != null) {
+            if (punishment.getType() == PunishmentType.BAN || punishment.getType() == PunishmentType.BLACKLIST) {
+                if (punishment.isActive()) {
+                    String expires = "";
+                    if (punishment.getLength() == -1) {
+                        expires = "Permanent";
+                    } else if (punishment.getLength() >= 1) {
+                        expires = TimeHelper.formatTime(punishment.getLength());
+                    }
+                    String message = "&d&lThe Nexus Reborn &7- " + punishment.getType().getColor() + StringHelper.capitalizeEveryWord(punishment.getType().getVerb()) + "\n \n" +
+                            "&fStaff: &a" + punishment.getActorNameCache() + "\n" +
+                            "&fReason: &b" + punishment.getReason() + "\n" +
+                            "&fExpires: &c" + expires + "\n" +
+                            "&fPunishment ID: &e" + punishment.getId();
+                    player.disconnect(TextComponent.fromLegacyText(ChatColor.translateAlternateColorCodes('&', message)));
+                    return;
+                }
+            }
+        }
+        
         if (!getPlayers().containsKey(player.getUniqueId())) {
             NexusAPI.getApi().getThreadFactory().runAsync(() -> {
                 NexusPlayer nexusPlayer;
@@ -32,7 +57,7 @@ public class ProxyPlayerManager extends PlayerManager implements Listener {
                     nexusPlayer.setFirstJoined(System.currentTimeMillis());
                 }
                 nexusPlayer.setLastLogin(System.currentTimeMillis());
-    
+                
                 if (NexusAPI.PHASE == Phase.ALPHA) {
                     if (!nexusPlayer.isAlpha()) {
                         nexusPlayer.setAlpha(true);

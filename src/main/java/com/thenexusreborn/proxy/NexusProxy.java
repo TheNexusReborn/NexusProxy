@@ -1,13 +1,18 @@
 package com.thenexusreborn.proxy;
 
 import com.thenexusreborn.api.NexusAPI;
+import com.thenexusreborn.api.helper.*;
 import com.thenexusreborn.api.player.*;
+import com.thenexusreborn.api.punishment.*;
 import com.thenexusreborn.api.server.ServerInfo;
 import com.thenexusreborn.api.tags.Tag;
 import com.thenexusreborn.proxy.api.ProxyPlayerManager;
 import com.thenexusreborn.proxy.cmds.*;
 import com.thenexusreborn.proxy.listener.ServerPingListener;
 import com.thenexusreborn.proxy.settings.MOTD;
+import net.md_5.bungee.api.ChatColor;
+import net.md_5.bungee.api.chat.TextComponent;
+import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.config.*;
 
@@ -25,20 +30,13 @@ public class NexusProxy extends Plugin {
     @Override
     public void onEnable() {
         saveDefaultConfig();
+    
         try {
             config = ConfigurationProvider.getProvider(YamlConfiguration.class).load(new File(getDataFolder(), "config.yml"));
         } catch (IOException e) {
             e.printStackTrace();
             getLogger().severe("Could not load config file.");
             return;
-        }
-        
-        if (config.contains("motd")) {
-            String line1 = config.getString("motd.line1");
-            String line2 = config.getString("motd.line2");
-            this.motd = new MOTD(line1, line2);
-        } else {
-            this.motd = new MOTD("&d&lThe Nexus Reborn", "");
         }
         
         NexusAPI.setApi(new BungeeNexusAPI(this));
@@ -48,6 +46,14 @@ public class NexusProxy extends Plugin {
             e.printStackTrace();
             getLogger().severe("Could not load the Nexus API");
             return;
+        }
+        
+        if (config.contains("motd")) {
+            String line1 = config.getString("motd.line1");
+            String line2 = config.getString("motd.line2");
+            this.motd = new MOTD(line1, line2);
+        } else {
+            this.motd = new MOTD("&d&lThe Nexus Reborn", "");
         }
         
         getProxy().getPluginManager().registerListener(this, (ProxyPlayerManager) NexusAPI.getApi().getPlayerManager());
@@ -86,6 +92,35 @@ public class NexusProxy extends Plugin {
             serverInfo.setPlayers(getProxy().getOnlineCount());
             NexusAPI.getApi().getDataManager().pushServerInfo(serverInfo);
         }, 1L, 1L, TimeUnit.SECONDS);
+        
+        NexusAPI.getApi().getNetworkManager().getCommand("punishment").setExecutor((cmd, origin, args) -> getProxy().getScheduler().runAsync(this, () -> {
+            int id = Integer.parseInt(args[0]);
+            Punishment punishment = NexusAPI.getApi().getDataManager().getPunishment(id);
+            if (punishment.getType() == PunishmentType.BAN || punishment.getType() == PunishmentType.BLACKLIST || punishment.getType() == PunishmentType.KICK) {
+                //The Spigot Servers will handle only mutes and warnings as they are chat based. Proxy will handle bans, blacklists, and kicks
+                NexusAPI.getApi().getPunishmentManager().addPunishment(punishment);
+                UUID target = UUID.fromString(punishment.getTarget());
+                ProxiedPlayer proxiedPlayer = getProxy().getPlayer(target);
+                
+                if (proxiedPlayer != null) {
+                    String expires = "";
+                    if (punishment.getLength() == -1) {
+                        expires = "Permanent";
+                    } else if (punishment.getLength() >= 1) {
+                        expires = TimeHelper.formatTime(punishment.getLength());
+                    }
+    
+                    if (punishment.isActive()) {
+                        String message = "&d&lThe Nexus Reborn &7- " + punishment.getType().getColor() + StringHelper.capitalizeEveryWord(punishment.getType().getVerb()) + "\n \n" +
+                                "&fStaff: &a" + punishment.getActorNameCache() + "\n" +
+                                "&fReason: &b" + punishment.getReason() + "\n" +
+                                "&fExpires: &c" + expires + "\n" +
+                                "&fPunishment ID: &e" + punishment.getId();
+                        proxiedPlayer.disconnect(TextComponent.fromLegacyText(ChatColor.translateAlternateColorCodes('&', message)));
+                    }
+                }
+            }
+        }));
     }
     
     @Override
