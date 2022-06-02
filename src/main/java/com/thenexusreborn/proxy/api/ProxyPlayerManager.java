@@ -8,11 +8,12 @@ import com.thenexusreborn.api.stats.StatRegistry;
 import com.thenexusreborn.api.util.Operator;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.TextComponent;
-import net.md_5.bungee.api.connection.ProxiedPlayer;
+import net.md_5.bungee.api.connection.*;
 import net.md_5.bungee.api.event.*;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.event.EventHandler;
 
+import java.net.*;
 import java.util.*;
 
 public class ProxyPlayerManager extends PlayerManager implements Listener {
@@ -24,6 +25,12 @@ public class ProxyPlayerManager extends PlayerManager implements Listener {
     @EventHandler
     public void onPostLogin(PostLoginEvent e) {
         ProxiedPlayer player = e.getPlayer();
+    
+        NexusAPI.getApi().getThreadFactory().runAsync(() -> {
+            InetSocketAddress socketAddress = (InetSocketAddress) player.getSocketAddress();
+            NexusAPI.getApi().getDataManager().addIpHistory(player.getUniqueId(), socketAddress.getHostName());
+        });
+    
         List<Punishment> punishments = NexusAPI.getApi().getPunishmentManager().getPunishmentsByTarget(player.getUniqueId());
         if (punishments.size() > 0) {
             for (Punishment punishment : punishments) {
