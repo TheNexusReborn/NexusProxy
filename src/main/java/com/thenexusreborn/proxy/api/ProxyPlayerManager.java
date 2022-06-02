@@ -13,7 +13,7 @@ import net.md_5.bungee.api.event.*;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.event.EventHandler;
 
-import java.util.UUID;
+import java.util.*;
 
 public class ProxyPlayerManager extends PlayerManager implements Listener {
     @Override
@@ -24,23 +24,25 @@ public class ProxyPlayerManager extends PlayerManager implements Listener {
     @EventHandler
     public void onPostLogin(PostLoginEvent e) {
         ProxiedPlayer player = e.getPlayer();
-        Punishment punishment = NexusAPI.getApi().getPunishmentManager().getPunishmentByTarget(player.getUniqueId());
-        if (punishment != null) {
-            if (punishment.getType() == PunishmentType.BAN || punishment.getType() == PunishmentType.BLACKLIST) {
-                if (punishment.isActive()) {
-                    String expires = "";
-                    if (punishment.getLength() == -1) {
-                        expires = "Permanent";
-                    } else if (punishment.getLength() >= 1) {
-                        expires = TimeHelper.formatTime(punishment.getLength());
+        List<Punishment> punishments = NexusAPI.getApi().getPunishmentManager().getPunishmentsByTarget(player.getUniqueId());
+        if (punishments.size() > 0) {
+            for (Punishment punishment : punishments) {
+                if (punishment.getType() == PunishmentType.BAN || punishment.getType() == PunishmentType.BLACKLIST) {
+                    if (punishment.isActive()) {
+                        String expires = "";
+                        if (punishment.getLength() == -1) {
+                            expires = "Permanent";
+                        } else if (punishment.getLength() >= 1) {
+                            expires = TimeHelper.formatTime(punishment.getLength());
+                        }
+                        String message = "&d&lThe Nexus Reborn &7- " + punishment.getType().getColor() + StringHelper.capitalizeEveryWord(punishment.getType().getVerb()) + "\n \n" +
+                                "&fStaff: &a" + punishment.getActorNameCache() + "\n" +
+                                "&fReason: &b" + punishment.getReason() + "\n" +
+                                "&fExpires: &c" + expires + "\n" +
+                                "&fPunishment ID: &e" + punishment.getId();
+                        player.disconnect(TextComponent.fromLegacyText(ChatColor.translateAlternateColorCodes('&', message)));
+                        return;
                     }
-                    String message = "&d&lThe Nexus Reborn &7- " + punishment.getType().getColor() + StringHelper.capitalizeEveryWord(punishment.getType().getVerb()) + "\n \n" +
-                            "&fStaff: &a" + punishment.getActorNameCache() + "\n" +
-                            "&fReason: &b" + punishment.getReason() + "\n" +
-                            "&fExpires: &c" + expires + "\n" +
-                            "&fPunishment ID: &e" + punishment.getId();
-                    player.disconnect(TextComponent.fromLegacyText(ChatColor.translateAlternateColorCodes('&', message)));
-                    return;
                 }
             }
         }
