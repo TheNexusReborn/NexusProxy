@@ -1,19 +1,18 @@
 package com.thenexusreborn.proxy.api;
 
 import com.thenexusreborn.api.*;
-import com.thenexusreborn.api.helper.*;
 import com.thenexusreborn.api.player.*;
 import com.thenexusreborn.api.punishment.*;
 import com.thenexusreborn.api.stats.StatRegistry;
 import com.thenexusreborn.api.util.Operator;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.TextComponent;
-import net.md_5.bungee.api.connection.*;
+import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.event.*;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.event.EventHandler;
 
-import java.net.*;
+import java.net.InetSocketAddress;
 import java.util.*;
 
 public class ProxyPlayerManager extends PlayerManager implements Listener {
@@ -25,30 +24,26 @@ public class ProxyPlayerManager extends PlayerManager implements Listener {
     @EventHandler
     public void onPostLogin(PostLoginEvent e) {
         ProxiedPlayer player = e.getPlayer();
-    
-        NexusAPI.getApi().getThreadFactory().runAsync(() -> {
-            InetSocketAddress socketAddress = (InetSocketAddress) player.getSocketAddress();
-            NexusAPI.getApi().getDataManager().addIpHistory(player.getUniqueId(), socketAddress.getHostName());
-        });
-    
+        
+        InetSocketAddress socketAddress = (InetSocketAddress) player.getSocketAddress();
+        NexusAPI.getApi().getThreadFactory().runAsync(() -> NexusAPI.getApi().getDataManager().addIpHistory(player.getUniqueId(), socketAddress.getHostName()));
+        
+        Map<String, Set<UUID>> ipHistory = NexusAPI.getApi().getPlayerManager().getIpHistory();
+        if (ipHistory.containsKey(socketAddress.getHostName())) {
+            ipHistory.get(socketAddress.getHostName()).add(player.getUniqueId());
+        } else {
+            ipHistory.put(socketAddress.getHostName(), Collections.singleton(player.getUniqueId()));
+        }
+        
         List<Punishment> punishments = NexusAPI.getApi().getPunishmentManager().getPunishmentsByTarget(player.getUniqueId());
         if (punishments.size() > 0) {
             for (Punishment punishment : punishments) {
                 if (punishment.getType() == PunishmentType.BAN || punishment.getType() == PunishmentType.BLACKLIST) {
                     if (punishment.isActive()) {
-                        String expires = "";
-                        if (punishment.getLength() == -1) {
-                            expires = "Permanent";
-                        } else if (punishment.getLength() >= 1) {
-                            expires = TimeHelper.formatTime(punishment.getLength());
+                        if (!PlayerManager.NEXUS_TEAM.contains(player.getUniqueId())) {
+                            player.disconnect(TextComponent.fromLegacyText(ChatColor.translateAlternateColorCodes('&', punishment.formatKick())));
+                            return;
                         }
-                        String message = "&d&lThe Nexus Reborn &7- " + punishment.getType().getColor() + StringHelper.capitalizeEveryWord(punishment.getType().getVerb()) + "\n \n" +
-                                "&fStaff: &a" + punishment.getActorNameCache() + "\n" +
-                                "&fReason: &b" + punishment.getReason() + "\n" +
-                                "&fExpires: &c" + expires + "\n" +
-                                "&fPunishment ID: &e" + punishment.getId();
-                        player.disconnect(TextComponent.fromLegacyText(ChatColor.translateAlternateColorCodes('&', message)));
-                        return;
                     }
                 }
             }

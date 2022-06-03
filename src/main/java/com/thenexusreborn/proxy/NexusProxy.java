@@ -1,7 +1,6 @@
 package com.thenexusreborn.proxy;
 
 import com.thenexusreborn.api.NexusAPI;
-import com.thenexusreborn.api.helper.*;
 import com.thenexusreborn.api.player.*;
 import com.thenexusreborn.api.punishment.*;
 import com.thenexusreborn.api.server.ServerInfo;
@@ -11,12 +10,13 @@ import com.thenexusreborn.proxy.cmds.*;
 import com.thenexusreborn.proxy.listener.ServerPingListener;
 import com.thenexusreborn.proxy.settings.MOTD;
 import net.md_5.bungee.api.ChatColor;
-import net.md_5.bungee.api.chat.TextComponent;
+import net.md_5.bungee.api.chat.*;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.config.*;
 
 import java.io.*;
+import java.net.InetSocketAddress;
 import java.nio.file.Files;
 import java.sql.*;
 import java.util.*;
@@ -30,7 +30,7 @@ public class NexusProxy extends Plugin {
     @Override
     public void onEnable() {
         saveDefaultConfig();
-    
+        
         try {
             config = ConfigurationProvider.getProvider(YamlConfiguration.class).load(new File(getDataFolder(), "config.yml"));
         } catch (IOException e) {
@@ -97,26 +97,34 @@ public class NexusProxy extends Plugin {
             int id = Integer.parseInt(args[0]);
             Punishment punishment = NexusAPI.getApi().getDataManager().getPunishment(id);
             if (punishment.getType() == PunishmentType.BAN || punishment.getType() == PunishmentType.BLACKLIST || punishment.getType() == PunishmentType.KICK) {
-                //The Spigot Servers will handle only mutes and warnings as they are chat based. Proxy will handle bans, blacklists, and kicks
                 NexusAPI.getApi().getPunishmentManager().addPunishment(punishment);
                 UUID target = UUID.fromString(punishment.getTarget());
                 ProxiedPlayer proxiedPlayer = getProxy().getPlayer(target);
                 
                 if (proxiedPlayer != null) {
-                    String expires = "";
-                    if (punishment.getLength() == -1) {
-                        expires = "Permanent";
-                    } else if (punishment.getLength() >= 1) {
-                        expires = TimeHelper.formatTime(punishment.getLength());
-                    }
-    
+                    String address = ((InetSocketAddress) proxiedPlayer.getSocketAddress()).getHostName();
+                    
+                    NexusPlayer punishedPlayer = NexusAPI.getApi().getPlayerManager().getNexusPlayer(target);
+                    
                     if (punishment.isActive()) {
-                        String message = "&d&lThe Nexus Reborn &7- " + punishment.getType().getColor() + StringHelper.capitalizeEveryWord(punishment.getType().getVerb()) + "\n \n" +
-                                "&fStaff: &a" + punishment.getActorNameCache() + "\n" +
-                                "&fReason: &b" + punishment.getReason() + "\n" +
-                                "&fExpires: &c" + expires + "\n" +
-                                "&fPunishment ID: &e" + punishment.getId();
-                        proxiedPlayer.disconnect(TextComponent.fromLegacyText(ChatColor.translateAlternateColorCodes('&', message)));
+                        BaseComponent[] disconnectMsg = TextComponent.fromLegacyText(ChatColor.translateAlternateColorCodes('&', punishment.formatKick()));
+                        if (punishedPlayer.getRank() == Rank.NEXUS) {
+                            punishedPlayer.sendMessage("&6&l>> &cSomeone tried to " + punishment.getType().name().toLowerCase() + " but you are immune.");
+                        } else {
+                            proxiedPlayer.disconnect(disconnectMsg);
+                            
+                            if (punishment.getType() == PunishmentType.BLACKLIST) {
+                                Set<UUID> uuids = NexusAPI.getApi().getPlayerManager().getIpHistory().get(address);
+                                if (uuids != null && uuids.size() > 0) {
+                                    for (UUID uuid : uuids) {
+                                        ProxiedPlayer player = getProxy().getPlayer(uuid);
+                                        if (player != null) {
+                                            player.disconnect(disconnectMsg);
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
