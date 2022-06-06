@@ -2,16 +2,21 @@ package com.thenexusreborn.proxy;
 
 import com.thenexusreborn.api.NexusAPI;
 import com.thenexusreborn.api.player.*;
+import com.thenexusreborn.api.punishment.*;
 import com.thenexusreborn.api.server.ServerInfo;
 import com.thenexusreborn.api.tags.Tag;
 import com.thenexusreborn.proxy.api.ProxyPlayerManager;
 import com.thenexusreborn.proxy.cmds.*;
 import com.thenexusreborn.proxy.listener.ServerPingListener;
 import com.thenexusreborn.proxy.settings.MOTD;
+import net.md_5.bungee.api.ChatColor;
+import net.md_5.bungee.api.chat.*;
+import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.config.*;
 
 import java.io.*;
+import java.net.InetSocketAddress;
 import java.nio.file.Files;
 import java.sql.*;
 import java.util.*;
@@ -25,20 +30,13 @@ public class NexusProxy extends Plugin {
     @Override
     public void onEnable() {
         saveDefaultConfig();
+        
         try {
             config = ConfigurationProvider.getProvider(YamlConfiguration.class).load(new File(getDataFolder(), "config.yml"));
         } catch (IOException e) {
             e.printStackTrace();
             getLogger().severe("Could not load config file.");
             return;
-        }
-        
-        if (config.contains("motd")) {
-            String line1 = config.getString("motd.line1");
-            String line2 = config.getString("motd.line2");
-            this.motd = new MOTD(line1, line2);
-        } else {
-            this.motd = new MOTD("&d&lThe Nexus Reborn", "");
         }
         
         NexusAPI.setApi(new BungeeNexusAPI(this));
@@ -48,6 +46,14 @@ public class NexusProxy extends Plugin {
             e.printStackTrace();
             getLogger().severe("Could not load the Nexus API");
             return;
+        }
+        
+        if (config.contains("motd")) {
+            String line1 = config.getString("motd.line1");
+            String line2 = config.getString("motd.line2");
+            this.motd = new MOTD(line1, line2);
+        } else {
+            this.motd = new MOTD("&d&lThe Nexus Reborn", "");
         }
         
         getProxy().getPluginManager().registerListener(this, (ProxyPlayerManager) NexusAPI.getApi().getPlayerManager());
@@ -86,6 +92,43 @@ public class NexusProxy extends Plugin {
             serverInfo.setPlayers(getProxy().getOnlineCount());
             NexusAPI.getApi().getDataManager().pushServerInfo(serverInfo);
         }, 1L, 1L, TimeUnit.SECONDS);
+        
+        NexusAPI.getApi().getNetworkManager().getCommand("punishment").setExecutor((cmd, origin, args) -> getProxy().getScheduler().runAsync(this, () -> {
+            int id = Integer.parseInt(args[0]);
+            Punishment punishment = NexusAPI.getApi().getDataManager().getPunishment(id);
+            if (punishment.getType() == PunishmentType.BAN || punishment.getType() == PunishmentType.BLACKLIST || punishment.getType() == PunishmentType.KICK) {
+                NexusAPI.getApi().getPunishmentManager().addPunishment(punishment);
+                UUID target = UUID.fromString(punishment.getTarget());
+                ProxiedPlayer proxiedPlayer = getProxy().getPlayer(target);
+                
+                if (proxiedPlayer != null) {
+                    String address = ((InetSocketAddress) proxiedPlayer.getSocketAddress()).getHostName();
+                    
+                    NexusPlayer punishedPlayer = NexusAPI.getApi().getPlayerManager().getNexusPlayer(target);
+                    
+                    if (punishment.isActive()) {
+                        BaseComponent[] disconnectMsg = TextComponent.fromLegacyText(ChatColor.translateAlternateColorCodes('&', punishment.formatKick()));
+                        if (punishedPlayer.getRank() == Rank.NEXUS) {
+                            punishedPlayer.sendMessage("&6&l>> &cSomeone tried to " + punishment.getType().name().toLowerCase() + " but you are immune.");
+                        } else {
+                            proxiedPlayer.disconnect(disconnectMsg);
+                            
+                            if (punishment.getType() == PunishmentType.BLACKLIST) {
+                                Set<UUID> uuids = NexusAPI.getApi().getPlayerManager().getIpHistory().get(address);
+                                if (uuids != null && uuids.size() > 0) {
+                                    for (UUID uuid : uuids) {
+                                        ProxiedPlayer player = getProxy().getPlayer(uuid);
+                                        if (player != null) {
+                                            player.disconnect(disconnectMsg);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }));
     }
     
     @Override

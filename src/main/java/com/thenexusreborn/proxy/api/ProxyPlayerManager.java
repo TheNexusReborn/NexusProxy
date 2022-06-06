@@ -2,14 +2,18 @@ package com.thenexusreborn.proxy.api;
 
 import com.thenexusreborn.api.*;
 import com.thenexusreborn.api.player.*;
+import com.thenexusreborn.api.punishment.*;
 import com.thenexusreborn.api.stats.StatRegistry;
 import com.thenexusreborn.api.util.Operator;
+import net.md_5.bungee.api.ChatColor;
+import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.event.*;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.event.EventHandler;
 
-import java.util.UUID;
+import java.net.InetSocketAddress;
+import java.util.*;
 
 public class ProxyPlayerManager extends PlayerManager implements Listener {
     @Override
@@ -20,6 +24,31 @@ public class ProxyPlayerManager extends PlayerManager implements Listener {
     @EventHandler
     public void onPostLogin(PostLoginEvent e) {
         ProxiedPlayer player = e.getPlayer();
+        
+        InetSocketAddress socketAddress = (InetSocketAddress) player.getSocketAddress();
+        NexusAPI.getApi().getThreadFactory().runAsync(() -> NexusAPI.getApi().getDataManager().addIpHistory(player.getUniqueId(), socketAddress.getHostName()));
+        
+        Map<String, Set<UUID>> ipHistory = NexusAPI.getApi().getPlayerManager().getIpHistory();
+        if (ipHistory.containsKey(socketAddress.getHostName())) {
+            ipHistory.get(socketAddress.getHostName()).add(player.getUniqueId());
+        } else {
+            ipHistory.put(socketAddress.getHostName(), Collections.singleton(player.getUniqueId()));
+        }
+        
+        List<Punishment> punishments = NexusAPI.getApi().getPunishmentManager().getPunishmentsByTarget(player.getUniqueId());
+        if (punishments.size() > 0) {
+            for (Punishment punishment : punishments) {
+                if (punishment.getType() == PunishmentType.BAN || punishment.getType() == PunishmentType.BLACKLIST) {
+                    if (punishment.isActive()) {
+                        if (!PlayerManager.NEXUS_TEAM.contains(player.getUniqueId())) {
+                            player.disconnect(TextComponent.fromLegacyText(ChatColor.translateAlternateColorCodes('&', punishment.formatKick())));
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+        
         if (!getPlayers().containsKey(player.getUniqueId())) {
             NexusAPI.getApi().getThreadFactory().runAsync(() -> {
                 NexusPlayer nexusPlayer;
@@ -32,7 +61,7 @@ public class ProxyPlayerManager extends PlayerManager implements Listener {
                     nexusPlayer.setFirstJoined(System.currentTimeMillis());
                 }
                 nexusPlayer.setLastLogin(System.currentTimeMillis());
-    
+                
                 if (NexusAPI.PHASE == Phase.ALPHA) {
                     if (!nexusPlayer.isAlpha()) {
                         nexusPlayer.setAlpha(true);
