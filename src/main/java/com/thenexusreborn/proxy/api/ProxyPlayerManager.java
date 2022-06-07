@@ -26,15 +26,24 @@ public class ProxyPlayerManager extends PlayerManager implements Listener {
         ProxiedPlayer player = e.getPlayer();
         
         InetSocketAddress socketAddress = (InetSocketAddress) player.getSocketAddress();
-        NexusAPI.getApi().getThreadFactory().runAsync(() -> NexusAPI.getApi().getDataManager().addIpHistory(player.getUniqueId(), socketAddress.getHostName()));
+        NexusAPI.getApi().getThreadFactory().runAsync(() -> {
+            long ipStart = System.currentTimeMillis();
+            NexusAPI.getApi().getDataManager().addIpHistory(player.getUniqueId(), socketAddress.getHostName());
+            long ipEnd = System.currentTimeMillis();
+            System.out.println("Adding IP History took: " + (ipEnd - ipStart));
+        });
         
+        long checkIpHistoryStart = System.currentTimeMillis();
         Map<String, Set<UUID>> ipHistory = NexusAPI.getApi().getPlayerManager().getIpHistory();
         if (ipHistory.containsKey(socketAddress.getHostName())) {
             ipHistory.get(socketAddress.getHostName()).add(player.getUniqueId());
         } else {
-            ipHistory.put(socketAddress.getHostName(), Collections.singleton(player.getUniqueId()));
+            ipHistory.put(socketAddress.getHostName(), new HashSet<>(Collections.singleton(player.getUniqueId())));
         }
+        long checkIpHistoryEnd = System.currentTimeMillis();
+        System.out.println("Checking IP History took: " + (checkIpHistoryEnd - checkIpHistoryStart));
         
+        long punishmentsStart = System.currentTimeMillis();
         List<Punishment> punishments = NexusAPI.getApi().getPunishmentManager().getPunishmentsByTarget(player.getUniqueId());
         if (punishments.size() > 0) {
             for (Punishment punishment : punishments) {
@@ -48,9 +57,12 @@ public class ProxyPlayerManager extends PlayerManager implements Listener {
                 }
             }
         }
+        long punishmentsEnd = System.currentTimeMillis();
+        System.out.println("Checking punishments took: " + (punishmentsEnd - punishmentsStart));
         
         if (!getPlayers().containsKey(player.getUniqueId())) {
             NexusAPI.getApi().getThreadFactory().runAsync(() -> {
+                long dataStart = System.currentTimeMillis();
                 NexusPlayer nexusPlayer;
                 if (!hasData(player.getUniqueId())) {
                     nexusPlayer = createPlayerData(player.getUniqueId(), player.getName());
@@ -86,6 +98,8 @@ public class ProxyPlayerManager extends PlayerManager implements Listener {
                 
                 getPlayers().put(nexusPlayer.getUniqueId(), nexusPlayer);
                 NexusAPI.getApi().getDataManager().pushPlayer(nexusPlayer);
+                long dataEnd = System.currentTimeMillis();
+                System.out.println("Loading Player Data from Database took: " + (dataEnd - dataStart));
             });
         }
     }
