@@ -103,10 +103,9 @@ public class NexusProxy extends Plugin {
                 
                 if (proxiedPlayer != null) {
                     String address = ((InetSocketAddress) proxiedPlayer.getSocketAddress()).getHostName();
-                    
                     NexusPlayer punishedPlayer = NexusAPI.getApi().getPlayerManager().getNexusPlayer(target);
                     
-                    if (punishment.isActive()) {
+                    if (punishment.isActive() || punishment.getType() == PunishmentType.KICK) {
                         BaseComponent[] disconnectMsg = TextComponent.fromLegacyText(ChatColor.translateAlternateColorCodes('&', punishment.formatKick()));
                         if (punishedPlayer.getRank() == Rank.NEXUS) {
                             punishedPlayer.sendMessage("&6&l>> &cSomeone tried to " + punishment.getType().name().toLowerCase() + " but you are immune.");
