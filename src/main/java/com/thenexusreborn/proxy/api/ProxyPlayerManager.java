@@ -26,19 +26,20 @@ public class ProxyPlayerManager extends PlayerManager implements Listener {
         ProxiedPlayer player = e.getPlayer();
         
         InetSocketAddress socketAddress = (InetSocketAddress) player.getSocketAddress();
+        String hostName = socketAddress.getHostString();
         NexusAPI.getApi().getThreadFactory().runAsync(() -> {
             long ipStart = System.currentTimeMillis();
-            NexusAPI.getApi().getDataManager().addIpHistory(player.getUniqueId(), socketAddress.getHostName());
+            NexusAPI.getApi().getDataManager().addIpHistory(player.getUniqueId(), hostName);
             long ipEnd = System.currentTimeMillis();
             System.out.println("Adding IP History took: " + (ipEnd - ipStart));
         });
         
         long checkIpHistoryStart = System.currentTimeMillis();
         Map<String, Set<UUID>> ipHistory = NexusAPI.getApi().getPlayerManager().getIpHistory();
-        if (ipHistory.containsKey(socketAddress.getHostName())) {
-            ipHistory.get(socketAddress.getHostName()).add(player.getUniqueId());
+        if (ipHistory.containsKey(hostName)) {
+            ipHistory.get(hostName).add(player.getUniqueId());
         } else {
-            ipHistory.put(socketAddress.getHostName(), new HashSet<>(Collections.singleton(player.getUniqueId())));
+            ipHistory.put(hostName, new HashSet<>(Collections.singleton(player.getUniqueId())));
         }
         long checkIpHistoryEnd = System.currentTimeMillis();
         System.out.println("Checking IP History took: " + (checkIpHistoryEnd - checkIpHistoryStart));
