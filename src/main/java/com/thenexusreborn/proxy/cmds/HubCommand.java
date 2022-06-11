@@ -20,7 +20,7 @@ public class HubCommand extends Command {
         
         ProxiedPlayer player = (ProxiedPlayer) sender;
         for (ServerInfo server : ProxyServer.getInstance().getServers().values()) {
-            if (server.getName().toLowerCase().contains("hub")) {
+            if (server.getName().equalsIgnoreCase("h1")) {
                 player.connect(server);
                 player.sendMessage(new ComponentBuilder("Sent you to the hub").color(ChatColor.YELLOW).create());
                 break;
