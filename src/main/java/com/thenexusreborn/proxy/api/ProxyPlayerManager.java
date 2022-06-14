@@ -3,7 +3,7 @@ package com.thenexusreborn.proxy.api;
 import com.thenexusreborn.api.*;
 import com.thenexusreborn.api.player.*;
 import com.thenexusreborn.api.punishment.*;
-import com.thenexusreborn.api.stats.StatRegistry;
+import com.thenexusreborn.api.stats.StatHelper;
 import com.thenexusreborn.api.util.Operator;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -83,9 +83,9 @@ public class ProxyPlayerManager extends PlayerManager implements Listener {
                 }
                 
                 boolean addedStat = false;
-                for (String statName : StatRegistry.getStats()) {
+                for (String statName : StatHelper.getStats()) {
                     if (!nexusPlayer.hasStat(statName)) {
-                        nexusPlayer.changeStat(statName, StatRegistry.getDefaultValue(statName), Operator.ADD);
+                        nexusPlayer.changeStat(statName, StatHelper.getDefaultValue(statName), Operator.ADD);
                         addedStat = true;
                     }
                 }
