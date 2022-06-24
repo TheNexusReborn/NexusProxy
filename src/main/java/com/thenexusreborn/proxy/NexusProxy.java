@@ -63,8 +63,6 @@ public class NexusProxy extends Plugin {
         
         getProxy().getPluginManager().registerCommand(this, new NetworkCmd(this));
         getProxy().getPluginManager().registerCommand(this, new HubCommand());
-        getProxy().getPluginManager().registerCommand(this, new CreatePlayerCmd());
-        getProxy().getPluginManager().registerCommand(this, new UpdatePlayersCmd());
         
         getProxy().getScheduler().schedule(this, () -> {
             PlayerManager playerManager = NexusAPI.getApi().getPlayerManager();
@@ -74,10 +72,16 @@ public class NexusProxy extends Plugin {
                     if (resultSet.next()) {
                         String rawRanks = resultSet.getString("ranks");
                         Map<Rank, Long> ranks = NexusAPI.getApi().getDataManager().parseRanks(rawRanks);
-                        player.setRanks(ranks);
+                        ranks.forEach((rank, time) -> {
+                            try {
+                                player.addRank(rank, time);
+                            } catch (Exception e) {}
+                        });
                         String rawTags = resultSet.getString("unlockedTags");
-                        Set<Tag> tags = NexusAPI.getApi().getDataManager().parseTags(rawTags);
-                        player.setUnlockedTags(tags);
+                        Set<String> tags = NexusAPI.getApi().getDataManager().parseTags(rawTags);
+                        for (String tag : tags) {
+                            player.unlockTag(tag);
+                        }
                         player.setTag(new Tag(resultSet.getString("tag")));
                     }
                 } catch (SQLException e) {

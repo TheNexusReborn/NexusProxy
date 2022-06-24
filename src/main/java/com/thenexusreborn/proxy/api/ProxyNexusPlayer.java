@@ -9,12 +9,30 @@ import net.md_5.bungee.api.connection.ProxiedPlayer;
 import java.util.*;
 
 public class ProxyNexusPlayer extends NexusPlayer {
+    public ProxyNexusPlayer(CachedPlayer cachedPlayer) {
+        super(cachedPlayer);
+    }
+    
+    public ProxyNexusPlayer(UUID uniqueId) {
+        super(uniqueId);
+    }
+    
     public ProxyNexusPlayer(UUID uniqueId, String name) {
         super(uniqueId, name);
     }
     
-    public ProxyNexusPlayer(UUID uniqueId, Map<Rank, Long> ranks, long firstJoined, long lastLogin, long lastLogout, long playTime, String lastKnownName, Tag tag, Set<Tag> unlockedTags, boolean prealpha, boolean alpha, boolean beta) {
-        super(uniqueId, ranks, firstJoined, lastLogin, lastLogout, playTime, lastKnownName, tag, unlockedTags, prealpha, alpha, beta);
+    public ProxyNexusPlayer(UUID uniqueId, Map<Rank, Long> ranks, long firstJoined, long lastLogin, long lastLogout, String lastKnownName, Tag tag, Set<String> unlockedTags, boolean prealpha, boolean alpha, boolean beta) {
+        super(uniqueId);
+        this.ranks = ranks;
+        this.firstJoined = firstJoined;
+        this.lastLogin = lastLogin;
+        this.lastLogout = lastLogout;
+        this.name = lastKnownName;
+        this.tag = tag;
+        this.unlockedTags = unlockedTags;
+        this.prealpha = prealpha;
+        this.alpha = alpha;
+        this.beta = beta;
     }
     
     public ProxiedPlayer getPlayer() {
@@ -22,12 +40,13 @@ public class ProxyNexusPlayer extends NexusPlayer {
     }
     
     @Override
-    public String getNameFromServer() {
-        ProxiedPlayer player = getPlayer();
+    public String getName() {
+        ProxiedPlayer player = ProxyServer.getInstance().getPlayer(this.uniqueId);
         if (player != null) {
             return player.getName();
         }
-        return null;
+        
+        return super.getName();
     }
     
     @Override

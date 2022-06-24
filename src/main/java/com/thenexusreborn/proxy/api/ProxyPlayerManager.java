@@ -3,8 +3,7 @@ package com.thenexusreborn.proxy.api;
 import com.thenexusreborn.api.*;
 import com.thenexusreborn.api.player.*;
 import com.thenexusreborn.api.punishment.*;
-import com.thenexusreborn.api.stats.StatHelper;
-import com.thenexusreborn.api.util.Operator;
+import com.thenexusreborn.api.stats.*;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
@@ -82,18 +81,6 @@ public class ProxyPlayerManager extends PlayerManager implements Listener {
                     }
                 }
                 
-                boolean addedStat = false;
-                for (String statName : StatHelper.getStats()) {
-                    if (!nexusPlayer.hasStat(statName)) {
-                        nexusPlayer.changeStat(statName, StatHelper.getDefaultValue(statName), Operator.ADD);
-                        addedStat = true;
-                    }
-                }
-                
-                if (addedStat) {
-                    nexusPlayer.consolodateStats();
-                }
-                
                 getPlayers().put(nexusPlayer.getUniqueId(), nexusPlayer);
                 NexusAPI.getApi().getDataManager().pushPlayer(nexusPlayer);
                 long dataEnd = System.currentTimeMillis();
@@ -108,9 +95,9 @@ public class ProxyPlayerManager extends PlayerManager implements Listener {
             NexusAPI.getApi().getThreadFactory().runAsync(() -> {
                 nexusPlayer.setLastLogout(System.currentTimeMillis());
                 long playTime = nexusPlayer.getLastLogout() - nexusPlayer.getLastLogin();
-                nexusPlayer.setPlayTime(nexusPlayer.getPlayTime() + (playTime / 50));
+                nexusPlayer.changeStat("playtime", (playTime / 50), StatOperator.ADD);
                 NexusAPI.getApi().getDataManager().refreshPlayerStats(nexusPlayer);
-                nexusPlayer.consolodateStats();
+                StatHelper.consolidateStats(nexusPlayer);
                 saveToMySQLAsync(nexusPlayer);
             });
             this.players.remove(nexusPlayer.getUniqueId());
