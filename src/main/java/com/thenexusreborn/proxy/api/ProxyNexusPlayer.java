@@ -24,15 +24,15 @@ public class ProxyNexusPlayer extends NexusPlayer {
     public ProxyNexusPlayer(UUID uniqueId, Map<Rank, Long> ranks, long firstJoined, long lastLogin, long lastLogout, String lastKnownName, Tag tag, Set<String> unlockedTags, boolean prealpha, boolean alpha, boolean beta) {
         super(uniqueId);
         this.ranks = ranks;
-        this.firstJoined = firstJoined;
-        this.lastLogin = lastLogin;
-        this.lastLogout = lastLogout;
+        setFirstJoined(firstJoined);
+        setLastLogin(lastLogin);
+        setLastLogout(lastLogout);
         this.name = lastKnownName;
         this.tag = tag;
         this.unlockedTags = unlockedTags;
-        this.prealpha = prealpha;
-        this.alpha = alpha;
-        this.beta = beta;
+        setPrealpha(prealpha);
+        setAlpha(alpha);
+        setBeta(beta);
     }
     
     public ProxiedPlayer getPlayer() {
