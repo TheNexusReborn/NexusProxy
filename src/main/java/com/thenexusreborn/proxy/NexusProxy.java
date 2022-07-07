@@ -96,42 +96,6 @@ public class NexusProxy extends Plugin {
             serverInfo.setPlayers(getProxy().getOnlineCount());
             NexusAPI.getApi().getDataManager().pushServerInfo(serverInfo);
         }, 1L, 1L, TimeUnit.SECONDS);
-        
-        NexusAPI.getApi().getNetworkManager().getCommand("punishment").setExecutor((cmd, origin, args) -> getProxy().getScheduler().runAsync(this, () -> {
-            int id = Integer.parseInt(args[0]);
-            Punishment punishment = NexusAPI.getApi().getDataManager().getPunishment(id);
-            if (punishment.getType() == PunishmentType.BAN || punishment.getType() == PunishmentType.BLACKLIST || punishment.getType() == PunishmentType.KICK) {
-                NexusAPI.getApi().getPunishmentManager().addPunishment(punishment);
-                UUID target = UUID.fromString(punishment.getTarget());
-                ProxiedPlayer proxiedPlayer = getProxy().getPlayer(target);
-                
-                if (proxiedPlayer != null) {
-                    String address = ((InetSocketAddress) proxiedPlayer.getSocketAddress()).getHostName();
-                    NexusPlayer punishedPlayer = NexusAPI.getApi().getPlayerManager().getNexusPlayer(target);
-                    
-                    if (punishment.isActive() || punishment.getType() == PunishmentType.KICK) {
-                        BaseComponent[] disconnectMsg = TextComponent.fromLegacyText(ChatColor.translateAlternateColorCodes('&', punishment.formatKick()));
-                        if (punishedPlayer.getRank() == Rank.NEXUS) {
-                            punishedPlayer.sendMessage("&6&l>> &cSomeone tried to " + punishment.getType().name().toLowerCase() + " but you are immune.");
-                        } else {
-                            proxiedPlayer.disconnect(disconnectMsg);
-                            
-                            if (punishment.getType() == PunishmentType.BLACKLIST) {
-                                Set<UUID> uuids = NexusAPI.getApi().getPlayerManager().getIpHistory().get(address);
-                                if (uuids != null && uuids.size() > 0) {
-                                    for (UUID uuid : uuids) {
-                                        ProxiedPlayer player = getProxy().getPlayer(uuid);
-                                        if (player != null) {
-                                            player.disconnect(disconnectMsg);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }));
     }
     
     @Override
