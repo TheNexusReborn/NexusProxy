@@ -28,7 +28,7 @@ public class ProxyNexusPlayer extends NexusPlayer {
         setLastLogin(lastLogin);
         setLastLogout(lastLogout);
         this.name = lastKnownName;
-        this.tag = tag;
+        setTag(tag);
         this.unlockedTags = unlockedTags;
         setPrealpha(prealpha);
         setAlpha(alpha);
