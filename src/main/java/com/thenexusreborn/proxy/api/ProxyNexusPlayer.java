@@ -9,7 +9,7 @@ import net.md_5.bungee.api.connection.ProxiedPlayer;
 import java.util.*;
 
 public class ProxyNexusPlayer extends NexusPlayer {
-    public ProxyNexusPlayer(CachedPlayer cachedPlayer) {
+    public ProxyNexusPlayer(ProxyNexusPlayer cachedPlayer) {
         super(cachedPlayer);
     }
     
@@ -29,7 +29,7 @@ public class ProxyNexusPlayer extends NexusPlayer {
         setLastLogout(lastLogout);
         this.name = lastKnownName;
         setTag(tag);
-        this.unlockedTags = unlockedTags;
+        setUnlockedTags(unlockedTags);
         setPrealpha(prealpha);
         setAlpha(alpha);
         setBeta(beta);
