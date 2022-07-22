@@ -56,15 +56,15 @@ public class BungeeNexusAPI extends NexusAPI {
                             proxiedPlayer.disconnect(disconnectMsg);
                     
                             if (punishment.getType() == PunishmentType.BLACKLIST) {
-                                Set<UUID> uuids = NexusAPI.getApi().getPlayerManager().getIpHistory().get(address);
-                                if (uuids != null && uuids.size() > 0) {
-                                    for (UUID uuid : uuids) {
-                                        ProxiedPlayer player = ProxyServer.getInstance().getPlayer(uuid);
-                                        if (player != null) {
-                                            player.disconnect(disconnectMsg);
-                                        }
-                                    }
-                                }
+//                                Set<UUID> uuids = NexusAPI.getApi().getPlayerManager().getIpHistory().get(address);
+//                                if (uuids != null && uuids.size() > 0) {
+//                                    for (UUID uuid : uuids) {
+//                                        ProxiedPlayer player = ProxyServer.getInstance().getPlayer(uuid);
+//                                        if (player != null) {
+//                                            player.disconnect(disconnectMsg);
+//                                        }
+//                                    }
+//                                } //TODO
                             }
                         }
                     }
