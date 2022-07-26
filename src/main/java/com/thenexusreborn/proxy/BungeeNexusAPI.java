@@ -11,6 +11,7 @@ import net.md_5.bungee.api.*;
 import net.md_5.bungee.api.chat.*;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 
+import java.io.File;
 import java.net.InetSocketAddress;
 import java.sql.*;
 import java.util.*;
@@ -74,7 +75,17 @@ public class BungeeNexusAPI extends NexusAPI {
     }
     
     @Override
+    public void registerPreferences(PreferenceRegistry registry) {
+        
+    }
+    
+    @Override
     public Connection getConnection() throws SQLException {
         return plugin.getConnection();
+    }
+    
+    @Override
+    public File getFolder() {
+        return plugin.getDataFolder();
     }
 }
