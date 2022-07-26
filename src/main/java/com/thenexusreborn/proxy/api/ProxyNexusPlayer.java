@@ -9,10 +9,6 @@ import net.md_5.bungee.api.connection.ProxiedPlayer;
 import java.util.*;
 
 public class ProxyNexusPlayer extends NexusPlayer {
-    public ProxyNexusPlayer(ProxyNexusPlayer cachedPlayer) {
-        super(cachedPlayer);
-    }
-    
     public ProxyNexusPlayer(UUID uniqueId) {
         super(uniqueId);
     }
