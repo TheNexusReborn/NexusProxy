@@ -8,7 +8,7 @@ import java.util.*;
 
 public class ProxyPlayerFactory extends PlayerFactory {
     
-    private NexusProxy plugin;
+    private final NexusProxy plugin;
     
     public ProxyPlayerFactory(NexusProxy plugin) {
         this.plugin = plugin;

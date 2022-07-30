@@ -11,7 +11,7 @@ import java.util.*;
 
 public class ProxyServerManager extends ServerManager {
     
-    private NexusProxy plugin;
+    private final NexusProxy plugin;
     
     public ProxyServerManager(NexusProxy plugin) {
         this.plugin = plugin;

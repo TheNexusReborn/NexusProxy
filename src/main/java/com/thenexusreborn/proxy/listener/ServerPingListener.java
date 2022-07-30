@@ -10,7 +10,7 @@ import net.md_5.bungee.event.EventHandler;
 
 public class ServerPingListener implements Listener {
     
-    private NexusProxy plugin;
+    private final NexusProxy plugin;
     
     public ServerPingListener(NexusProxy plugin) {
         this.plugin = plugin;

@@ -1,25 +1,17 @@
 package com.thenexusreborn.proxy;
 
 import com.thenexusreborn.api.NexusAPI;
-import com.thenexusreborn.api.player.*;
-import com.thenexusreborn.api.punishment.*;
 import com.thenexusreborn.api.server.ServerInfo;
-import com.thenexusreborn.api.tags.Tag;
 import com.thenexusreborn.proxy.api.ProxyPlayerManager;
 import com.thenexusreborn.proxy.cmds.*;
 import com.thenexusreborn.proxy.listener.ServerPingListener;
 import com.thenexusreborn.proxy.settings.MOTD;
-import net.md_5.bungee.api.ChatColor;
-import net.md_5.bungee.api.chat.*;
-import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.config.*;
 
 import java.io.*;
-import java.net.InetSocketAddress;
 import java.nio.file.Files;
 import java.sql.*;
-import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 public class NexusProxy extends Plugin {
@@ -63,32 +55,6 @@ public class NexusProxy extends Plugin {
         
         getProxy().getPluginManager().registerCommand(this, new NetworkCmd(this));
         getProxy().getPluginManager().registerCommand(this, new HubCommand());
-        
-        getProxy().getScheduler().schedule(this, () -> {
-            PlayerManager playerManager = NexusAPI.getApi().getPlayerManager();
-            for (NexusPlayer player : new ArrayList<>(playerManager.getPlayers().values())) {
-                try (Connection connection = getConnection(); Statement statement = connection.createStatement()) {
-                    ResultSet resultSet = statement.executeQuery("select ranks, unlockedTags, tag from players where uuid='" + player.getUniqueId() + "';");
-                    if (resultSet.next()) {
-                        String rawRanks = resultSet.getString("ranks");
-                        Map<Rank, Long> ranks = NexusAPI.getApi().getDataManager().parseRanks(rawRanks);
-                        ranks.forEach((rank, time) -> {
-                            try {
-                                player.addRank(rank, time);
-                            } catch (Exception e) {}
-                        });
-                        String rawTags = resultSet.getString("unlockedTags");
-                        Set<String> tags = NexusAPI.getApi().getDataManager().parseTags(rawTags);
-                        for (String tag : tags) {
-                            player.unlockTag(tag);
-                        }
-                        player.setTag(new Tag(resultSet.getString("tag")));
-                    }
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
-        }, 1L, 1L, TimeUnit.SECONDS);
         
         getProxy().getScheduler().schedule(this, () -> {
             ServerInfo serverInfo = NexusAPI.getApi().getServerManager().getCurrentServer();
