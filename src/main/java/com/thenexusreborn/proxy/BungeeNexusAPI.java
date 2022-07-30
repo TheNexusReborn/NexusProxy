@@ -58,6 +58,7 @@ public class BungeeNexusAPI extends NexusAPI {
                             proxiedPlayer.disconnect(disconnectMsg);
                     
                             if (punishment.getType() == PunishmentType.BLACKLIST) {
+                                //TODO Reimplement with IPHistory rework
 //                                Set<UUID> uuids = NexusAPI.getApi().getPlayerManager().getIpHistory().get(address);
 //                                if (uuids != null && uuids.size() > 0) {
 //                                    for (UUID uuid : uuids) {
@@ -66,7 +67,7 @@ public class BungeeNexusAPI extends NexusAPI {
 //                                            player.disconnect(disconnectMsg);
 //                                        }
 //                                    }
-//                                } //TODO
+//                                }
                             }
                         }
                     }

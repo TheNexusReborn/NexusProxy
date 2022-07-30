@@ -34,12 +34,13 @@ public class ProxyPlayerManager extends PlayerManager implements Listener {
         });
         
         long checkIpHistoryStart = System.currentTimeMillis();
+        //TODO Reimplement IP History Here
 //        Map<String, Set<UUID>> ipHistory = NexusAPI.getApi().getPlayerManager().getIpHistory();
 //        if (ipHistory.containsKey(hostName)) {
 //            ipHistory.get(hostName).add(player.getUniqueId());
 //        } else {
 //            ipHistory.put(hostName, new HashSet<>(Collections.singleton(player.getUniqueId())));
-//        } //TODO
+//        }
         long checkIpHistoryEnd = System.currentTimeMillis();
         
         long punishmentsStart = System.currentTimeMillis();
