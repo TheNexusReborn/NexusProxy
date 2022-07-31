@@ -45,29 +45,28 @@ public class BungeeNexusAPI extends NexusAPI {
                 NexusAPI.getApi().getPunishmentManager().addPunishment(punishment);
                 UUID target = UUID.fromString(punishment.getTarget());
                 ProxiedPlayer proxiedPlayer = ProxyServer.getInstance().getPlayer(target);
-        
+                
                 if (proxiedPlayer != null) {
                     String address = ((InetSocketAddress) proxiedPlayer.getSocketAddress()).getHostName();
                     NexusPlayer punishedPlayer = NexusAPI.getApi().getPlayerManager().getNexusPlayer(target);
-            
+                    
                     if (punishment.isActive() || punishment.getType() == PunishmentType.KICK) {
                         BaseComponent[] disconnectMsg = TextComponent.fromLegacyText(ChatColor.translateAlternateColorCodes('&', punishment.formatKick()));
                         if (punishedPlayer.getRank() == Rank.NEXUS) {
-                            punishedPlayer.sendMessage("&6&l>> &cSomeone tried to " + punishment.getType().name().toLowerCase() + " but you are immune.");
+                            punishedPlayer.sendMessage("&6&l>> &cSomeone tried to " + punishment.getType().name().toLowerCase() + " you, but you are immune.");
                         } else {
                             proxiedPlayer.disconnect(disconnectMsg);
-                    
+                            
                             if (punishment.getType() == PunishmentType.BLACKLIST) {
-                                //TODO Reimplement with IPHistory rework
-//                                Set<UUID> uuids = NexusAPI.getApi().getPlayerManager().getIpHistory().get(address);
-//                                if (uuids != null && uuids.size() > 0) {
-//                                    for (UUID uuid : uuids) {
-//                                        ProxiedPlayer player = ProxyServer.getInstance().getPlayer(uuid);
-//                                        if (player != null) {
-//                                            player.disconnect(disconnectMsg);
-//                                        }
-//                                    }
-//                                }
+                                Set<UUID> uuids = NexusAPI.getApi().getDataManager().getPlayersByIp(address);
+                                if (uuids != null && uuids.size() > 0) {
+                                    for (UUID uuid : uuids) {
+                                        ProxiedPlayer player = ProxyServer.getInstance().getPlayer(uuid);
+                                        if (player != null) {
+                                            player.disconnect(disconnectMsg);
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
