@@ -1,6 +1,7 @@
 package com.thenexusreborn.proxy;
 
 import com.thenexusreborn.api.*;
+import com.thenexusreborn.api.data.objects.Database;
 import com.thenexusreborn.api.network.NetworkContext;
 import com.thenexusreborn.api.network.cmd.NetworkCommand;
 import com.thenexusreborn.api.player.*;
@@ -11,6 +12,7 @@ import com.thenexusreborn.proxy.api.*;
 import net.md_5.bungee.api.*;
 import net.md_5.bungee.api.chat.*;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
+import net.md_5.bungee.config.Configuration;
 
 import java.io.File;
 import java.net.InetSocketAddress;
@@ -28,7 +30,28 @@ public class BungeeNexusAPI extends NexusAPI {
     
     @Override
     public void registerDatabases(DatabaseRegistry registry) {
-        
+        Configuration databasesSection = plugin.getConfig().getSection("databases");
+        if (databasesSection != null) {
+            for (String db : databasesSection.getKeys()) {
+                String name;
+                String dbName = databasesSection.getString(db + ".name");
+                if (dbName != null && !dbName.equals("")) {
+                    name = dbName;
+                } else {
+                    name = db;
+                }
+            
+                String host = databasesSection.getString(db + ".host");
+                String user = databasesSection.getString(db + ".user");
+                String password = databasesSection.getString(db + ".password");
+                boolean primary = false;
+                if (databasesSection.contains(db + ".primary")) {
+                    primary = databasesSection.getBoolean(db + ".primary");
+                }
+                Database database = new Database(name, host, user, password, primary);
+                registry.register(database);
+            }
+        }
     }
     
     @Override
