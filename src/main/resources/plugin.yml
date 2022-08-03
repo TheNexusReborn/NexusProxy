@@ -2,3 +2,4 @@ name: NexusProxy
 main: com.thenexusreborn.proxy.NexusProxy
 version: ${project.version}
 author: Firestar311
+depend: [NexusCore]

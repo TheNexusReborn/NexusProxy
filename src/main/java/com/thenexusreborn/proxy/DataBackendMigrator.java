@@ -146,7 +146,7 @@ public class DataBackendMigrator extends Migrator {
                 }
                 
                 if (info == null) {
-                   continue;
+                    continue;
                 }
                 
                 Preference preference = new Preference(info, player, 0, value);
@@ -190,7 +190,16 @@ public class DataBackendMigrator extends Migrator {
                 alpha = Boolean.parseBoolean(resultSet.getString("alpha"));
                 beta = Boolean.parseBoolean(resultSet.getString("beta"));
                 
-                NexusPlayer player = NexusAPI.getApi().getPlayerFactory().createPlayer(uuid, ranks, firstJoined, lastLogin, lastLogout, lastKnownName, tag, unlockedTags, prealpha, alpha, beta);
+                NexusPlayer player = new NexusPlayer(uuid, lastKnownName);
+                player.setFirstJoined(firstJoined);
+                player.setLastLogin(lastLogin);
+                player.setLastLogout(lastLogout);
+                player.setTag(tag);
+                player.setUnlockedTags(unlockedTags);
+                player.setPrealpha(prealpha);
+                player.setAlpha(alpha);
+                player.setBeta(beta);
+                ranks.forEach(player::addRank);
                 
                 for (Preference preference : preferences) {
                     if (preference.getUuid().equals(uuid)) {
@@ -275,7 +284,7 @@ public class DataBackendMigrator extends Migrator {
         }
         
         NexusAPI.getApi().getLogger().info("A total of " + gameActions.size() + " GameActions were found.");
-    
+        
         NexusAPI.getApi().getLogger().info("Adding Game Actions to the Games");
         actionLoop:
         for (GameAction action : gameActions) {
@@ -289,7 +298,7 @@ public class DataBackendMigrator extends Migrator {
         
         NexusAPI.getApi().getLogger().info("Resetting Game IDs (To ensure that it works as intended)");
         games.forEach(gameInfo -> gameInfo.setId(0));
-    
+        
         NexusAPI.getApi().getLogger().info("Converting Punishment Data");
         List<Punishment> punishments = new ArrayList<>();
         try (Connection connection = NexusAPI.getApi().getConnection(); Statement statement = connection.createStatement()) {
