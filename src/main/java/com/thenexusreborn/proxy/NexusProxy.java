@@ -123,6 +123,12 @@ public class NexusProxy extends Plugin {
     public void onDisable() {
         config.set("motd.line1", this.motd.getLine1());
         config.set("motd.line2", this.motd.getLine2());
+        saveConfig();
+        
+        NexusAPI.getApi().getNetworkManager().close();
+    }
+    
+    public void saveConfig() {
         File file = new File(getDataFolder(), "config.yml");
         if (!file.exists()) {
             try {
@@ -131,15 +137,13 @@ public class NexusProxy extends Plugin {
                 e.printStackTrace();
             }
         }
-        
-        
+    
+    
         try {
             ConfigurationProvider.getProvider(YamlConfiguration.class).save(config, file);
         } catch (IOException e) {
             e.printStackTrace();
         }
-        
-        NexusAPI.getApi().getNetworkManager().close();
     }
     
     public void saveDefaultConfig() {
