@@ -201,16 +201,16 @@ public class DataBackendMigrator extends Migrator {
                 player.setBeta(beta);
                 ranks.forEach(player::addRank);
                 
-                for (Preference preference : preferences) {
-                    if (preference.getUuid().equals(uuid)) {
-                        player.addPreference(preference);
-                    }
-                }
-                for (Stat stat : stats) {
-                    if (stat.getUuid().equals(uuid)) {
-                        player.addStat(stat);
-                    }
-                }
+//                for (Preference preference : preferences) {
+//                    if (preference.getUuid().equals(uuid)) {
+//                        player.addPreference(preference);
+//                    }
+//                }
+//                for (Stat stat : stats) {
+//                    if (stat.getUuid().equals(uuid)) {
+//                        player.addStat(stat);
+//                    }
+//                }
                 
                 players.add(player);
             }
