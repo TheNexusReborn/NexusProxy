@@ -8,6 +8,7 @@ import com.thenexusreborn.api.gamearchive.*;
 import com.thenexusreborn.api.migration.Migrator;
 import com.thenexusreborn.api.player.*;
 import com.thenexusreborn.api.punishment.*;
+import com.thenexusreborn.api.registry.StatRegistry;
 import com.thenexusreborn.api.server.ServerInfo;
 import com.thenexusreborn.api.stats.*;
 import com.thenexusreborn.api.tags.Tag;
@@ -59,6 +60,31 @@ public class DataBackendMigrator extends Migrator {
 //        }
         
         NexusAPI.getApi().getLogger().info("Converting Stat Data");
+    
+        StatRegistry registry = StatHelper.getRegistry();
+        registry.register("sg_score", StatType.INTEGER, 100);
+        registry.register("sg_kills", StatType.INTEGER, 0);
+        registry.register("sg_highest_kill_streak", StatType.INTEGER, 0);
+        registry.register("sg_games", StatType.INTEGER, 0);
+        registry.register("sg_wins", StatType.INTEGER, 0);
+        registry.register("sg_winstreak", StatType.INTEGER, 0);
+        registry.register("sg_deaths", StatType.INTEGER, 0);
+        registry.register("sg_deathmatches_reached", StatType.INTEGER, 0);
+        registry.register("sg_chests_looted", StatType.INTEGER, 0);
+        registry.register("sg_assists", StatType.INTEGER, 0);
+        registry.register("sg_times_mutated", StatType.INTEGER, 0);
+        registry.register("sg_mutation_kills", StatType.INTEGER, 0);
+        registry.register("sg_mutation_deaths", StatType.INTEGER, 0);
+        registry.register("sg_mutation_passes", StatType.INTEGER, 0);
+        registry.register("sg_sponsored_others", StatType.INTEGER, 0);
+        registry.register("sg_sponsors_received", StatType.INTEGER, 0);
+        registry.register("sg_tournament_points", StatType.INTEGER, 0);
+        registry.register("sg_tournament_kills", StatType.INTEGER, 0);
+        registry.register("sg_tournament_wins", StatType.INTEGER, 0);
+        registry.register("sg_tournament_survives", StatType.INTEGER, 0);
+        registry.register("sg_tournament_chests_looted", StatType.INTEGER, 0);
+        registry.register("sg_tournament_assists", StatType.INTEGER, 0);
+        
         Set<Stat> stats = new HashSet<>();
         try (Connection connection = NexusAPI.getApi().getConnection(); Statement statement = connection.createStatement()) {
             ResultSet resultSet = statement.executeQuery("select * from stats");
