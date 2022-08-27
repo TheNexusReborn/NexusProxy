@@ -96,6 +96,19 @@ public class BungeeNexusAPI extends NexusAPI {
                 }
             }
         })));
+    
+        registry.register(new NetworkCommand("removepunishment", (cmd, origin, args) -> {
+            long id = Long.parseLong(args[0]);
+            Punishment punishment = NexusAPI.getApi().getPunishmentManager().getPunishment(id);
+            if (punishment != null) {
+                try {
+                    punishment = NexusAPI.getApi().getPrimaryDatabase().get(Punishment.class, "id", id).get(0);
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+                NexusAPI.getApi().getPunishmentManager().addPunishment(punishment);
+            }
+        }));
     }
     
     @Override
