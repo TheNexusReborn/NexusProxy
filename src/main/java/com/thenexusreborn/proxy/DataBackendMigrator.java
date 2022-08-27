@@ -67,7 +67,7 @@ public class DataBackendMigrator extends Migrator {
         registry.register("sg_highest_kill_streak", StatType.INTEGER, 0);
         registry.register("sg_games", StatType.INTEGER, 0);
         registry.register("sg_wins", StatType.INTEGER, 0);
-        registry.register("sg_winstreak", StatType.INTEGER, 0);
+        registry.register("sg_win_streak", StatType.INTEGER, 0);
         registry.register("sg_deaths", StatType.INTEGER, 0);
         registry.register("sg_deathmatches_reached", StatType.INTEGER, 0);
         registry.register("sg_chests_looted", StatType.INTEGER, 0);
@@ -90,6 +90,9 @@ public class DataBackendMigrator extends Migrator {
             ResultSet resultSet = statement.executeQuery("select * from stats");
             while (resultSet.next()) {
                 String name = StatHelper.formatStatName(resultSet.getString("name"));
+                if (name.equals("sg_sponsor_received")) {
+                    name = "sg_sponsors_received";
+                }
                 StatType type;
                 Stat.Info info = StatHelper.getInfo(name);
                 if (info == null) {
