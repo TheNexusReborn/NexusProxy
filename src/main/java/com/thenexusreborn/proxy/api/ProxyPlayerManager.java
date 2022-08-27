@@ -29,13 +29,8 @@ public class ProxyPlayerManager extends PlayerManager implements Listener {
         
         InetSocketAddress socketAddress = (InetSocketAddress) player.getSocketAddress();
         String hostName = socketAddress.getHostString();
-        NexusAPI.getApi().getThreadFactory().runAsync(() -> {
-            long ipStart = System.currentTimeMillis();
-            NexusAPI.getApi().getDataManager().addIpHistory(player.getUniqueId(), hostName);
-            long ipEnd = System.currentTimeMillis();
-        });
+        NexusAPI.getApi().getDataManager().addIpHistory(player.getUniqueId(), hostName);
         
-        long punishmentsStart = System.currentTimeMillis();
         List<Punishment> punishments = NexusAPI.getApi().getPunishmentManager().getPunishmentsByTarget(player.getUniqueId());
         if (punishments.size() > 0) {
             for (Punishment punishment : punishments) {
@@ -49,11 +44,9 @@ public class ProxyPlayerManager extends PlayerManager implements Listener {
                 }
             }
         }
-        long punishmentsEnd = System.currentTimeMillis();
         
         if (!getPlayers().containsKey(player.getUniqueId())) {
             NexusAPI.getApi().getThreadFactory().runAsync(() -> {
-                long dataStart = System.currentTimeMillis();
                 NexusPlayer nexusPlayer;
                 if (!hasData(player.getUniqueId())) {
                     nexusPlayer = createPlayerData(player.getUniqueId(), player.getName());
@@ -77,7 +70,6 @@ public class ProxyPlayerManager extends PlayerManager implements Listener {
                 
                 getPlayers().put(nexusPlayer.getUniqueId(), nexusPlayer);
                 NexusAPI.getApi().getDataManager().pushPlayer(nexusPlayer);
-                long dataEnd = System.currentTimeMillis();
             });
         }
     }
