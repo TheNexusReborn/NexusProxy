@@ -115,7 +115,7 @@ public class NexusProxy extends Plugin {
             ServerInfo serverInfo = NexusAPI.getApi().getServerManager().getCurrentServer();
             serverInfo.setStatus("online");
             serverInfo.setPlayers(getProxy().getOnlineCount());
-            NexusAPI.getApi().getDataManager().pushServerInfo(serverInfo);
+            NexusAPI.getApi().getPrimaryDatabase().push(serverInfo);
         }, 1L, 1L, TimeUnit.SECONDS);
     }
     

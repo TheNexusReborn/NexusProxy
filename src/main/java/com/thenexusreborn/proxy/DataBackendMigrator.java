@@ -1,7 +1,6 @@
 package com.thenexusreborn.proxy;
 
 import com.thenexusreborn.api.NexusAPI;
-import com.thenexusreborn.api.data.DataManager;
 import com.thenexusreborn.api.data.codec.*;
 import com.thenexusreborn.api.data.objects.Database;
 import com.thenexusreborn.api.gamearchive.*;
@@ -27,7 +26,6 @@ public class DataBackendMigrator extends Migrator {
     @Override
     public boolean migrate() {
         NexusAPI.getApi().getLogger().info("Starting Data Migration for version " + this.targetVersion);
-        DataManager dataManager = NexusAPI.getApi().getDataManager();
         Database database = NexusAPI.getApi().getPrimaryDatabase();
         
         NexusAPI.getApi().getLogger().info("Converting IP Data");
@@ -42,22 +40,6 @@ public class DataBackendMigrator extends Migrator {
             e.printStackTrace();
             return false;
         }
-
-//        NexusAPI.getApi().getLogger().info("Converting StatInfo Data");
-//        List<Stat.Info> statInfos = new ArrayList<>();
-//        try (Connection connection = NexusAPI.getApi().getConnection(); Statement statement = connection.createStatement()) {
-//            ResultSet statResultSet = statement.executeQuery("select * from statinfo;");
-//            while (statResultSet.next()) {
-//                String name = StatHelper.formatStatName(statResultSet.getString("name"));
-//                StatType type = StatType.valueOf(statResultSet.getString("type"));
-//                Object defaultValue = StatHelper.parseValue(type, statResultSet.getString("defaultValue"));
-//                Stat.Info statInfo = new Stat.Info(name, type, defaultValue);
-//                statInfos.add(statInfo);
-//            }
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            return false;
-//        }
         
         NexusAPI.getApi().getLogger().info("Converting Stat Data");
     
@@ -119,27 +101,6 @@ public class DataBackendMigrator extends Migrator {
             e.printStackTrace();
             return false;
         }
-
-//        NexusAPI.getApi().getLogger().info("Converting StatChanges Data");
-//        List<StatChange> statChanges = new ArrayList<>();
-//        try (Connection connection = NexusAPI.getApi().getConnection(); Statement statement = connection.createStatement()) {
-//            ResultSet statChangesResultSet = statement.executeQuery("select * from statchanges;");
-//            while (statChangesResultSet.next()) {
-//                int id = statChangesResultSet.getInt("id");
-//                String name = statChangesResultSet.getString("statName");
-//                StatOperator operator = StatOperator.valueOf(statChangesResultSet.getString("operator"));
-//                long timestamp = Long.parseLong(statChangesResultSet.getString("timestamp"));
-//                UUID uuid = UUID.fromString(statChangesResultSet.getString("uuid"));
-//                StatType type = StatType.DOUBLE;
-//                Object value = StatHelper.parseValue(type, statChangesResultSet.getString("value"));
-//                
-//                StatChange statChange = new StatChange(StatHelper.getInfo(name), id, uuid, value, operator, timestamp);
-//                statChanges.add(statChange);
-//            }
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            return false;
-//        }
         
         NexusAPI.getApi().getLogger().info("Converting PreferenceInfo Data");
         Set<Preference.Info> preferenceInfos = new HashSet<>();
@@ -229,17 +190,6 @@ public class DataBackendMigrator extends Migrator {
                 player.setAlpha(alpha);
                 player.setBeta(beta);
                 ranks.forEach(player::addRank);
-                
-//                for (Preference preference : preferences) {
-//                    if (preference.getUuid().equals(uuid)) {
-//                        player.addPreference(preference);
-//                    }
-//                }
-//                for (Stat stat : stats) {
-//                    if (stat.getUuid().equals(uuid)) {
-//                        player.addStat(stat);
-//                    }
-//                }
                 
                 players.add(player);
             }
@@ -384,14 +334,6 @@ public class DataBackendMigrator extends Migrator {
             e.printStackTrace();
             return false;
         }
-
-//        NexusAPI.getApi().getLogger().info("Deleting old tables");
-//        try (Connection connection = NexusAPI.getApi().getConnection(); Statement statement = connection.createStatement()) {
-//            statement.execute("drop table if exists gameactions,games,iphistory,playerpreferences,players,preferenceinfo,punishments,serverinfo,stats,statchanges,tournaments;");
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            return false;
-//        }
         
         NexusAPI.getApi().getLogger().info("Creating New Tables");
         try {

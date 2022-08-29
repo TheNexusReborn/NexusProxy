@@ -13,6 +13,7 @@ import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.event.EventHandler;
 
 import java.net.InetSocketAddress;
+import java.sql.SQLException;
 import java.util.*;
 
 public class ProxyPlayerManager extends PlayerManager implements Listener {
@@ -29,7 +30,7 @@ public class ProxyPlayerManager extends PlayerManager implements Listener {
         
         InetSocketAddress socketAddress = (InetSocketAddress) player.getSocketAddress();
         String hostName = socketAddress.getHostString();
-        NexusAPI.getApi().getDataManager().addIpHistory(player.getUniqueId(), hostName);
+        NexusAPI.getApi().getPlayerManager().addIpHistory(player.getUniqueId(), hostName);
         
         List<Punishment> punishments = NexusAPI.getApi().getPunishmentManager().getPunishmentsByTarget(player.getUniqueId());
         if (punishments.size() > 0) {
@@ -47,11 +48,15 @@ public class ProxyPlayerManager extends PlayerManager implements Listener {
         
         if (!getPlayers().containsKey(player.getUniqueId())) {
             NexusAPI.getApi().getThreadFactory().runAsync(() -> {
-                NexusPlayer nexusPlayer;
+                NexusPlayer nexusPlayer = null;
                 if (!hasData(player.getUniqueId())) {
                     nexusPlayer = createPlayerData(player.getUniqueId(), player.getName());
                 } else {
-                    nexusPlayer = NexusAPI.getApi().getDataManager().loadPlayer(player.getUniqueId());
+                    try {
+                        nexusPlayer = NexusAPI.getApi().getPrimaryDatabase().get(NexusPlayer.class, "uniqueId", player.getUniqueId()).get(0);
+                    } catch (SQLException ex) {
+                        ex.printStackTrace();
+                    }
                 }
                 if (nexusPlayer.getFirstJoined() == 0) {
                     nexusPlayer.setFirstJoined(System.currentTimeMillis());
@@ -69,7 +74,7 @@ public class ProxyPlayerManager extends PlayerManager implements Listener {
                 }
                 
                 getPlayers().put(nexusPlayer.getUniqueId(), nexusPlayer);
-                NexusAPI.getApi().getDataManager().pushPlayer(nexusPlayer);
+                NexusAPI.getApi().getPrimaryDatabase().push(nexusPlayer);
             });
         }
     }
@@ -82,7 +87,14 @@ public class ProxyPlayerManager extends PlayerManager implements Listener {
                 nexusPlayer.setLastLogout(System.currentTimeMillis());
                 long playTime = nexusPlayer.getLastLogout() - nexusPlayer.getLastLogin();
                 nexusPlayer.changeStat("playtime", (playTime / 50), StatOperator.ADD);
-                NexusAPI.getApi().getDataManager().refreshPlayerStats(nexusPlayer);
+                try {
+                    List<Stat> stats = NexusAPI.getApi().getPrimaryDatabase().get(Stat.class, "uuid", nexusPlayer.getUniqueId());
+                    for (Stat stat : stats) {
+                        nexusPlayer.changeStat(stat.getName(), stat.getValue(), StatOperator.SET);
+                    }
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
                 StatHelper.consolidateStats(nexusPlayer);
                 saveToMySQLAsync(nexusPlayer);
             });
