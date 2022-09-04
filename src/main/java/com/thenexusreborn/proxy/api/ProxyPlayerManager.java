@@ -102,6 +102,7 @@ public class ProxyPlayerManager extends PlayerManager implements Listener {
             if (nexusPlayer.getRank().ordinal() <= Rank.MEDIA.ordinal()) {
                 StaffChat.sendDisconnect(nexusPlayer);
             }
+            this.handlePlayerLeave(nexusPlayer);
         }
     }
 }
