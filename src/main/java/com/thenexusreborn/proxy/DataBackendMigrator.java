@@ -198,29 +198,6 @@ public class DataBackendMigrator extends Migrator {
             return false;
         }
         
-        NexusAPI.getApi().getLogger().info("Converting ServerInfo Data");
-        Set<ServerInfo> serverInfos = new HashSet<>();
-        try (Connection connection = NexusAPI.getApi().getConnection(); Statement statement = connection.createStatement()) {
-            ResultSet resultSet = statement.executeQuery("select * from serverinfo;");
-            while (resultSet.next()) {
-                String ip = resultSet.getString("ip");
-                String name = resultSet.getString("name");
-                int port = resultSet.getInt("port");
-                int serverPlayers = resultSet.getInt("players");
-                int maxPlayers = resultSet.getInt("maxPlayers");
-                int hiddenPlayers = resultSet.getInt("hiddenPlayers");
-                int multicraftId = resultSet.getInt("multicraftId");
-                String type = resultSet.getString("type");
-                String status = resultSet.getString("status");
-                String state = resultSet.getString("state");
-                
-                serverInfos.add(new ServerInfo(multicraftId, ip, name, port, serverPlayers, maxPlayers, hiddenPlayers, type, status, state));
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
-        
         NexusAPI.getApi().getLogger().info("Converting Game Data");
         Set<GameInfo> games = new TreeSet<>();
         try (Connection connection = NexusAPI.getApi().getConnection(); Statement infoStatement = connection.createStatement(); Statement actionStatement = connection.createStatement()) {
@@ -368,11 +345,6 @@ public class DataBackendMigrator extends Migrator {
         NexusAPI.getApi().getLogger().info("Saving Player Data: " + players.size());
         for (NexusPlayer player : players) {
             database.push(player);
-        }
-        
-        NexusAPI.getApi().getLogger().info("Saving Server Data: " + serverInfos.size());
-        for (ServerInfo serverInfo : serverInfos) {
-            database.push(serverInfo);
         }
         
         NexusAPI.getApi().getLogger().info("Saving Game Data: " + games.size());
