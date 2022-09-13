@@ -111,6 +111,8 @@ public class NexusProxy extends Plugin {
         getProxy().getPluginManager().registerCommand(this, new NetworkCmd(this));
         getProxy().getPluginManager().registerCommand(this, new HubCommand());
         
+        getProxy().getScheduler().schedule(this, () -> NexusAPI.getApi().getServerManager().updateStoredData(), 1L, 1L, TimeUnit.SECONDS);
+        
         getProxy().getScheduler().schedule(this, () -> {
             ServerInfo serverInfo = NexusAPI.getApi().getServerManager().getCurrentServer();
             serverInfo.setStatus("online");
