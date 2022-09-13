@@ -15,7 +15,7 @@ public class HubCommand extends Command {
     }
     
     @Override
-    public void execute(CommandSender sender, String[] strings) {
+    public void execute(CommandSender sender, String[] args) {
         if (!(sender instanceof ProxiedPlayer)) {
             sender.sendMessage(new ComponentBuilder("Only players may use that command.").color(ChatColor.RED).create());
             return;
@@ -23,22 +23,33 @@ public class HubCommand extends Command {
         
         ProxiedPlayer player = (ProxiedPlayer) sender;
         List<com.thenexusreborn.api.server.ServerInfo> hubServers = new ArrayList<>();
-        for (com.thenexusreborn.api.server.ServerInfo server : NexusAPI.getApi().getServerManager().getServers()) {
+        List<ServerInfo> allServers = NexusAPI.getApi().getServerManager().getServers();
+        for (com.thenexusreborn.api.server.ServerInfo server : allServers) {
             if (server.getType().equalsIgnoreCase("hub")) {
                 hubServers.add(server);
             }
         }
-        
+    
+        if (hubServers.size() == 0) {
+            player.sendMessage(new ComponentBuilder("Could not find a hub server").color(ChatColor.RED).create());
+            return;
+        }
         findHub(player, hubServers);
     }
     
     private void findHub(ProxiedPlayer player, List<ServerInfo> hubServers) {
         for (ServerInfo hubServer : hubServers) {
-            if (hubServer.getState().equalsIgnoreCase("online")) {
+            if (hubServer.getStatus().equalsIgnoreCase("online")) {
                 net.md_5.bungee.api.config.ServerInfo serverInfo = ProxyServer.getInstance().getServerInfo(hubServer.getName());
                 player.connect(serverInfo, (status, throwable) -> {
                     if (!status) {
-                        findHub(player, hubServers);
+                        List<ServerInfo> hubs = new ArrayList<>(hubServers);
+                        hubs.remove(hubServer);
+                        if (hubs.size() == 0) {
+                            player.sendMessage(new ComponentBuilder("Could not find a hub server").color(ChatColor.RED).create());
+                            return;
+                        }
+                        findHub(player, hubs);
                     } else {
                         player.sendMessage(new ComponentBuilder("Sent you to the hub").color(ChatColor.YELLOW).create());
                     }
