@@ -22,13 +22,7 @@ public class HubCommand extends Command {
         }
         
         ProxiedPlayer player = (ProxiedPlayer) sender;
-        List<com.thenexusreborn.api.server.ServerInfo> hubServers = new ArrayList<>();
-        List<ServerInfo> allServers = NexusAPI.getApi().getServerManager().getServers();
-        for (com.thenexusreborn.api.server.ServerInfo server : allServers) {
-            if (server.getType().equalsIgnoreCase("hub")) {
-                hubServers.add(server);
-            }
-        }
+        List<com.thenexusreborn.api.server.ServerInfo> hubServers = NexusAPI.getApi().getServerManager().getServersByType("hub");
     
         if (hubServers.size() == 0) {
             player.sendMessage(new ComponentBuilder("Could not find a hub server").color(ChatColor.RED).create());
