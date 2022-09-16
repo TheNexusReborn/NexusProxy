@@ -13,6 +13,6 @@ public class ProxyPlayerFactory extends PlayerFactory {
     
     @Override
     public PlayerProxy createProxy(NexusPlayer player) {
-        return null; //TODO Implement when PlayerProxy interface is complete
+        return new ProxyPlayerProxy(player.getUniqueId());
     }
 }
