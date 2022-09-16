@@ -61,9 +61,7 @@ public class ProxyPlayerManager extends PlayerManager implements Listener {
                 }
                 nexusPlayer.setLastLogin(System.currentTimeMillis());
     
-                InetSocketAddress socketAddress = (InetSocketAddress) player.getSocketAddress();
-                String hostName = socketAddress.getHostString();
-                NexusAPI.getApi().getPlayerManager().addIpHistory(player.getUniqueId(), hostName);
+                
                 
                 if (NexusAPI.PHASE == Phase.ALPHA) {
                     if (!nexusPlayer.isAlpha()) {
@@ -74,9 +72,15 @@ public class ProxyPlayerManager extends PlayerManager implements Listener {
                         nexusPlayer.setBeta(true);
                     }
                 }
+    
+    
+                NexusAPI.getApi().getPrimaryDatabase().push(nexusPlayer);
                 
                 getPlayers().put(nexusPlayer.getUniqueId(), nexusPlayer);
-                NexusAPI.getApi().getPrimaryDatabase().push(nexusPlayer);
+                cachedPlayers.put(nexusPlayer.getUniqueId(), new CachedPlayer(nexusPlayer));
+                InetSocketAddress socketAddress = (InetSocketAddress) player.getSocketAddress();
+                String hostName = socketAddress.getHostString();
+                NexusAPI.getApi().getPlayerManager().addIpHistory(player.getUniqueId(), hostName);
             });
         }
     }
