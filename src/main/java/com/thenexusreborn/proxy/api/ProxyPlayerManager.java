@@ -28,9 +28,7 @@ public class ProxyPlayerManager extends PlayerManager implements Listener {
     public void onPostLogin(PostLoginEvent e) {
         ProxiedPlayer player = e.getPlayer();
         
-        InetSocketAddress socketAddress = (InetSocketAddress) player.getSocketAddress();
-        String hostName = socketAddress.getHostString();
-        NexusAPI.getApi().getPlayerManager().addIpHistory(player.getUniqueId(), hostName);
+        
         
         List<Punishment> punishments = NexusAPI.getApi().getPunishmentManager().getPunishmentsByTarget(player.getUniqueId());
         if (punishments.size() > 0) {
@@ -62,6 +60,10 @@ public class ProxyPlayerManager extends PlayerManager implements Listener {
                     nexusPlayer.setFirstJoined(System.currentTimeMillis());
                 }
                 nexusPlayer.setLastLogin(System.currentTimeMillis());
+    
+                InetSocketAddress socketAddress = (InetSocketAddress) player.getSocketAddress();
+                String hostName = socketAddress.getHostString();
+                NexusAPI.getApi().getPlayerManager().addIpHistory(player.getUniqueId(), hostName);
                 
                 if (NexusAPI.PHASE == Phase.ALPHA) {
                     if (!nexusPlayer.isAlpha()) {
