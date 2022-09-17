@@ -60,8 +60,6 @@ public class ProxyPlayerManager extends PlayerManager implements Listener {
                     nexusPlayer.setFirstJoined(System.currentTimeMillis());
                 }
                 nexusPlayer.setLastLogin(System.currentTimeMillis());
-    
-                
                 
                 if (NexusAPI.PHASE == Phase.ALPHA) {
                     if (!nexusPlayer.isAlpha()) {
