@@ -8,7 +8,6 @@ import com.thenexusreborn.api.migration.Migrator;
 import com.thenexusreborn.api.player.*;
 import com.thenexusreborn.api.punishment.*;
 import com.thenexusreborn.api.registry.StatRegistry;
-import com.thenexusreborn.api.server.ServerInfo;
 import com.thenexusreborn.api.stats.*;
 import com.thenexusreborn.api.tags.Tag;
 import com.thenexusreborn.api.tournament.Tournament;
@@ -94,8 +93,10 @@ public class DataBackendMigrator extends Migrator {
                 long created = Long.parseLong(resultSet.getString("created"));
                 long modified = Long.parseLong(resultSet.getString("modified"));
                 
-                Stat stat = new Stat(info, 0, uuid, value, created, modified);
-                stats.add(stat);
+                if (!value.equals(info.getDefaultValue())) {
+                    Stat stat = new Stat(info, 0, uuid, value, created, modified);
+                    stats.add(stat);
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -324,45 +325,53 @@ public class DataBackendMigrator extends Migrator {
         
         NexusAPI.getApi().getLogger().info("Saving IP Data: " + ipHistory.size());
         for (IPEntry ipEntry : ipHistory) {
-            database.push(ipEntry);
+            database.queue(ipEntry);
         }
+        database.flush();
         
         NexusAPI.getApi().getLogger().info("Saving Stat Data: " + stats.size());
         for (Stat stat : stats) {
-            database.push(stat);
+            database.queue(stat);
         }
+        database.flush();
         
         NexusAPI.getApi().getLogger().info("Saving PreferenceInfo Data: " + preferenceInfos.size());
         for (Preference.Info preferenceInfo : preferenceInfos) {
-            database.push(preferenceInfo);
+            database.queue(preferenceInfo);
         }
+        database.flush();
         
         NexusAPI.getApi().getLogger().info("Saving Preference Data: " + preferences.size());
         for (Preference preference : preferences) {
-            database.push(preference);
+            database.queue(preference);
         }
+        database.flush();
         
         NexusAPI.getApi().getLogger().info("Saving Player Data: " + players.size());
         for (NexusPlayer player : players) {
-            database.push(player);
+            database.queue(player);
         }
+        database.flush();
         
         NexusAPI.getApi().getLogger().info("Saving Game Data: " + games.size());
         for (GameInfo game : games) {
-            database.push(game);
+            database.queue(game);
         }
+        database.flush();
         
         NexusAPI.getApi().getLogger().info("Saving Punishment Data: " + punishments.size());
         for (Punishment punishment : punishments) {
-            database.push(punishment);
+            database.queue(punishment);
         }
+        database.flush();
         
         NexusAPI.getApi().getLogger().info("Saving Tournament Data: " + tournaments.size());
         for (Tournament tournament : tournaments) {
-            database.push(tournament);
+            database.queue(tournament);
         }
+        database.flush();
         
-        NexusAPI.getApi().getLogger().info("Success");
+        NexusAPI.getApi().getLogger().info("Successfully migrated data");
         return true;
     }
 }
