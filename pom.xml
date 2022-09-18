@@ -80,7 +80,7 @@
         <dependency>
             <groupId>com.thenexusreborn</groupId>
             <artifactId>NexusAPI</artifactId>
-            <version>1.5.1-ALPHA</version>
+            <version>1.5.2-ALPHA</version>
             <exclusions>
                 <exclusion>
                     <groupId>io.netty</groupId>
