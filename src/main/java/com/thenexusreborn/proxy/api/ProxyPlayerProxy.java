@@ -26,4 +26,9 @@ public class ProxyPlayerProxy implements PlayerProxy {
     public boolean isOnline() {
         return ProxyServer.getInstance().getPlayer(uuid) != null;
     }
+    
+    @Override
+    public String getName() {
+        return ProxyServer.getInstance().getPlayer(uuid).getName();
+    }
 }

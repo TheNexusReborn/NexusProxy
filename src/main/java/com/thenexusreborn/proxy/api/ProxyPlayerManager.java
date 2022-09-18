@@ -61,6 +61,10 @@ public class ProxyPlayerManager extends PlayerManager implements Listener {
                 }
                 nexusPlayer.setLastLogin(System.currentTimeMillis());
                 
+                if (!nexusPlayer.getName().equals(nexusPlayer.getPlayer().getName())) {
+                    nexusPlayer.setName(nexusPlayer.getPlayer().getName());
+                }
+                
                 if (NexusAPI.PHASE == Phase.ALPHA) {
                     if (!nexusPlayer.isAlpha()) {
                         nexusPlayer.setAlpha(true);
@@ -70,8 +74,7 @@ public class ProxyPlayerManager extends PlayerManager implements Listener {
                         nexusPlayer.setBeta(true);
                     }
                 }
-    
-    
+                
                 NexusAPI.getApi().getPrimaryDatabase().push(nexusPlayer);
                 
                 getPlayers().put(nexusPlayer.getUniqueId(), nexusPlayer);
