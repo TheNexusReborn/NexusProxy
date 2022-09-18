@@ -11,7 +11,7 @@ import java.util.*;
 
 public class ProxyServerManager extends ServerManager {
     
-    private NexusProxy plugin;
+    private final NexusProxy plugin;
     
     public ProxyServerManager(NexusProxy plugin) {
         this.plugin = plugin;
@@ -38,7 +38,11 @@ public class ProxyServerManager extends ServerManager {
         String status = "loading";
         String state = "none";
         this.currentServer = new ServerInfo(multicraftId, ip, name, port, players, maxPlayers, hiddenPlayers, type, status, state);
-        NexusAPI.getApi().getDataManager().pushServerInfoAsync(this.currentServer);
+        long id = plugin.getConfig().getLong("serverInfo.id");
+        this.currentServer.setId(id);
+        NexusAPI.getApi().getPrimaryDatabase().push(this.currentServer);
+        plugin.getConfig().set("serverInfo.id", this.currentServer.getId());
+        plugin.saveConfig();
     }
     
     @Override

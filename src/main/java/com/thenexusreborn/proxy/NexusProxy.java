@@ -1,31 +1,28 @@
 package com.thenexusreborn.proxy;
 
-import com.thenexusreborn.api.NexusAPI;
-import com.thenexusreborn.api.player.*;
-import com.thenexusreborn.api.punishment.*;
+import com.thenexusreborn.api.*;
+import com.thenexusreborn.api.migration.Migrator;
 import com.thenexusreborn.api.server.ServerInfo;
-import com.thenexusreborn.api.tags.Tag;
+import com.thenexusreborn.api.util.Version;
 import com.thenexusreborn.proxy.api.ProxyPlayerManager;
 import com.thenexusreborn.proxy.cmds.*;
 import com.thenexusreborn.proxy.listener.ServerPingListener;
 import com.thenexusreborn.proxy.settings.MOTD;
-import net.md_5.bungee.api.ChatColor;
-import net.md_5.bungee.api.chat.*;
-import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.config.*;
 
 import java.io.*;
-import java.net.InetSocketAddress;
 import java.nio.file.Files;
 import java.sql.*;
-import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 
 public class NexusProxy extends Plugin {
     private Configuration config;
     
     private MOTD motd;
+    
+    private Migrator migrator = new DataBackendMigrator();
     
     @Override
     public void onEnable() {
@@ -47,6 +44,56 @@ public class NexusProxy extends Plugin {
             getLogger().severe("Could not load the Nexus API");
             return;
         }
+    
+        try {
+            File lastMigrationFile = new File(getDataFolder(), "lastMigration.txt");
+            Version previousVersion = null;
+            if (lastMigrationFile.exists()) {
+                try (FileInputStream fis = new FileInputStream(lastMigrationFile); BufferedReader reader = new BufferedReader(new InputStreamReader(fis))) {
+                    previousVersion = new Version(reader.readLine());
+                    getLogger().info("Found last migration version: " + previousVersion);
+                }
+            } else {
+                getLogger().info("Could not find a last migration version.");
+            }
+    
+            boolean migrationSuccess = false;
+    
+            if (migrator != null) {
+                getLogger().info("Found a Migrator");
+                int compareResult = NexusAPI.getApi().getVersion().compareTo(previousVersion);
+                if (compareResult > 0) {
+                    getLogger().info("Current version is higher than previous version.");
+                    if (migrator.getTargetVersion().equals(NexusAPI.getApi().getVersion())) {
+                        getLogger().info("Migrator version is for the current version");
+                        migrationSuccess = migrator.migrate();
+                        getLogger().info("Migration success: " + migrationSuccess);
+                
+                        if (!migrationSuccess) {
+                            NexusAPI.logMessage(Level.INFO, "Error while processing migration", "Migrator Class: " + migrator.getClass().getName());
+                        }
+                    }
+                }
+            }
+    
+            if (migrator == null || migrationSuccess) {
+                if (!lastMigrationFile.exists()) {
+                    lastMigrationFile.createNewFile();
+                }
+                String version = NexusAPI.getApi().getVersion().getMajor() + "." + NexusAPI.getApi().getVersion().getMinor();
+                if (NexusAPI.getApi().getVersion().getPatch() > 0) {
+                    version += "." + NexusAPI.getApi().getVersion().getPatch();
+                }
+                version += "-" + NexusAPI.getApi().getVersion().getStage().name();
+                try (FileOutputStream fos = new FileOutputStream(lastMigrationFile); BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(fos))) {
+                    writer.write(version);
+                    writer.flush();
+                }
+                getLogger().info("Updated last migration version to the current version.");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         
         if (config.contains("motd")) {
             String line1 = config.getString("motd.line1");
@@ -63,77 +110,27 @@ public class NexusProxy extends Plugin {
         
         getProxy().getPluginManager().registerCommand(this, new NetworkCmd(this));
         getProxy().getPluginManager().registerCommand(this, new HubCommand());
-        getProxy().getPluginManager().registerCommand(this, new CreatePlayerCmd());
-        getProxy().getPluginManager().registerCommand(this, new UpdatePlayersCmd());
         
-        getProxy().getScheduler().schedule(this, () -> {
-            PlayerManager playerManager = NexusAPI.getApi().getPlayerManager();
-            for (NexusPlayer player : new ArrayList<>(playerManager.getPlayers().values())) {
-                try (Connection connection = getConnection(); Statement statement = connection.createStatement()) {
-                    ResultSet resultSet = statement.executeQuery("select ranks, unlockedTags, tag from players where uuid='" + player.getUniqueId() + "';");
-                    if (resultSet.next()) {
-                        String rawRanks = resultSet.getString("ranks");
-                        Map<Rank, Long> ranks = NexusAPI.getApi().getDataManager().parseRanks(rawRanks);
-                        player.setRanks(ranks);
-                        String rawTags = resultSet.getString("unlockedTags");
-                        Set<Tag> tags = NexusAPI.getApi().getDataManager().parseTags(rawTags);
-                        player.setUnlockedTags(tags);
-                        player.setTag(new Tag(resultSet.getString("tag")));
-                    }
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
-        }, 1L, 1L, TimeUnit.SECONDS);
+        getProxy().getScheduler().schedule(this, () -> NexusAPI.getApi().getServerManager().updateStoredData(), 1L, 1L, TimeUnit.SECONDS);
         
         getProxy().getScheduler().schedule(this, () -> {
             ServerInfo serverInfo = NexusAPI.getApi().getServerManager().getCurrentServer();
             serverInfo.setStatus("online");
             serverInfo.setPlayers(getProxy().getOnlineCount());
-            NexusAPI.getApi().getDataManager().pushServerInfo(serverInfo);
+            NexusAPI.getApi().getPrimaryDatabase().push(serverInfo);
         }, 1L, 1L, TimeUnit.SECONDS);
-        
-        NexusAPI.getApi().getNetworkManager().getCommand("punishment").setExecutor((cmd, origin, args) -> getProxy().getScheduler().runAsync(this, () -> {
-            int id = Integer.parseInt(args[0]);
-            Punishment punishment = NexusAPI.getApi().getDataManager().getPunishment(id);
-            if (punishment.getType() == PunishmentType.BAN || punishment.getType() == PunishmentType.BLACKLIST || punishment.getType() == PunishmentType.KICK) {
-                NexusAPI.getApi().getPunishmentManager().addPunishment(punishment);
-                UUID target = UUID.fromString(punishment.getTarget());
-                ProxiedPlayer proxiedPlayer = getProxy().getPlayer(target);
-                
-                if (proxiedPlayer != null) {
-                    String address = ((InetSocketAddress) proxiedPlayer.getSocketAddress()).getHostName();
-                    NexusPlayer punishedPlayer = NexusAPI.getApi().getPlayerManager().getNexusPlayer(target);
-                    
-                    if (punishment.isActive() || punishment.getType() == PunishmentType.KICK) {
-                        BaseComponent[] disconnectMsg = TextComponent.fromLegacyText(ChatColor.translateAlternateColorCodes('&', punishment.formatKick()));
-                        if (punishedPlayer.getRank() == Rank.NEXUS) {
-                            punishedPlayer.sendMessage("&6&l>> &cSomeone tried to " + punishment.getType().name().toLowerCase() + " but you are immune.");
-                        } else {
-                            proxiedPlayer.disconnect(disconnectMsg);
-                            
-                            if (punishment.getType() == PunishmentType.BLACKLIST) {
-                                Set<UUID> uuids = NexusAPI.getApi().getPlayerManager().getIpHistory().get(address);
-                                if (uuids != null && uuids.size() > 0) {
-                                    for (UUID uuid : uuids) {
-                                        ProxiedPlayer player = getProxy().getPlayer(uuid);
-                                        if (player != null) {
-                                            player.disconnect(disconnectMsg);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }));
     }
     
     @Override
     public void onDisable() {
         config.set("motd.line1", this.motd.getLine1());
         config.set("motd.line2", this.motd.getLine2());
+        saveConfig();
+        
+        NexusAPI.getApi().getNetworkManager().close();
+    }
+    
+    public void saveConfig() {
         File file = new File(getDataFolder(), "config.yml");
         if (!file.exists()) {
             try {
@@ -142,15 +139,13 @@ public class NexusProxy extends Plugin {
                 e.printStackTrace();
             }
         }
-        
-        
+    
+    
         try {
             ConfigurationProvider.getProvider(YamlConfiguration.class).save(config, file);
         } catch (IOException e) {
             e.printStackTrace();
         }
-        
-        NexusAPI.getApi().getNetworkManager().close();
     }
     
     public void saveDefaultConfig() {

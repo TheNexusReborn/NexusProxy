@@ -8,7 +8,7 @@ import java.util.concurrent.TimeUnit;
 
 public class ProxyThreadFactory extends ThreadFactory {
     
-    private NexusProxy plugin;
+    private final NexusProxy plugin;
     
     public ProxyThreadFactory(NexusProxy plugin) {
         this.plugin = plugin;
