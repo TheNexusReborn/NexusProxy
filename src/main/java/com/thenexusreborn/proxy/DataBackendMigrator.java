@@ -11,8 +11,8 @@ import com.thenexusreborn.api.registry.StatRegistry;
 import com.thenexusreborn.api.stats.*;
 import com.thenexusreborn.api.tags.Tag;
 import com.thenexusreborn.api.tournament.Tournament;
-import com.thenexusreborn.api.util.Version;
-import com.thenexusreborn.api.util.Version.Stage;
+import com.thenexusreborn.api.server.Version;
+import com.thenexusreborn.api.server.Version.Stage;
 
 import java.sql.*;
 import java.util.*;

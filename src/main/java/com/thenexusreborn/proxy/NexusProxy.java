@@ -3,7 +3,7 @@ package com.thenexusreborn.proxy;
 import com.thenexusreborn.api.*;
 import com.thenexusreborn.api.migration.Migrator;
 import com.thenexusreborn.api.server.ServerInfo;
-import com.thenexusreborn.api.util.Version;
+import com.thenexusreborn.api.server.Version;
 import com.thenexusreborn.proxy.api.ProxyPlayerManager;
 import com.thenexusreborn.proxy.cmds.*;
 import com.thenexusreborn.proxy.listener.ServerPingListener;

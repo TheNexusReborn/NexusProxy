@@ -7,7 +7,7 @@ import com.thenexusreborn.api.network.cmd.NetworkCommand;
 import com.thenexusreborn.api.player.*;
 import com.thenexusreborn.api.punishment.*;
 import com.thenexusreborn.api.registry.*;
-import com.thenexusreborn.api.util.Environment;
+import com.thenexusreborn.api.server.Environment;
 import com.thenexusreborn.proxy.api.*;
 import net.md_5.bungee.api.*;
 import net.md_5.bungee.api.chat.*;
