@@ -1,9 +1,7 @@
 package com.thenexusreborn.proxy;
 
-import com.thenexusreborn.api.*;
-import com.thenexusreborn.api.migration.Migrator;
+import com.thenexusreborn.api.NexusAPI;
 import com.thenexusreborn.api.server.ServerInfo;
-import com.thenexusreborn.api.server.Version;
 import com.thenexusreborn.proxy.api.ProxyPlayerManager;
 import com.thenexusreborn.proxy.cmds.*;
 import com.thenexusreborn.proxy.listener.ServerPingListener;
@@ -15,14 +13,11 @@ import java.io.*;
 import java.nio.file.Files;
 import java.sql.*;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
 
 public class NexusProxy extends Plugin {
     private Configuration config;
     
     private MOTD motd;
-    
-    private Migrator migrator = new DataBackendMigrator();
     
     @Override
     public void onEnable() {
@@ -45,55 +40,55 @@ public class NexusProxy extends Plugin {
             return;
         }
     
-        try {
-            File lastMigrationFile = new File(getDataFolder(), "lastMigration.txt");
-            Version previousVersion = null;
-            if (lastMigrationFile.exists()) {
-                try (FileInputStream fis = new FileInputStream(lastMigrationFile); BufferedReader reader = new BufferedReader(new InputStreamReader(fis))) {
-                    previousVersion = new Version(reader.readLine());
-                    getLogger().info("Found last migration version: " + previousVersion);
-                }
-            } else {
-                getLogger().info("Could not find a last migration version.");
-            }
+//        try {
+//            File lastMigrationFile = new File(getDataFolder(), "lastMigration.txt");
+//            Version previousVersion = null;
+//            if (lastMigrationFile.exists()) {
+//                try (FileInputStream fis = new FileInputStream(lastMigrationFile); BufferedReader reader = new BufferedReader(new InputStreamReader(fis))) {
+//                    previousVersion = new Version(reader.readLine());
+//                    getLogger().info("Found last migration version: " + previousVersion);
+//                }
+//            } else {
+//                getLogger().info("Could not find a last migration version.");
+//            }
+//    
+//            boolean migrationSuccess = false;
     
-            boolean migrationSuccess = false;
-    
-            if (migrator != null) {
-                getLogger().info("Found a Migrator");
-                int compareResult = NexusAPI.getApi().getVersion().compareTo(previousVersion);
-                if (compareResult > 0) {
-                    getLogger().info("Current version is higher than previous version.");
-                    if (migrator.getTargetVersion().equals(NexusAPI.getApi().getVersion())) {
-                        getLogger().info("Migrator version is for the current version");
-                        migrationSuccess = migrator.migrate();
-                        getLogger().info("Migration success: " + migrationSuccess);
-                
-                        if (!migrationSuccess) {
-                            NexusAPI.logMessage(Level.INFO, "Error while processing migration", "Migrator Class: " + migrator.getClass().getName());
-                        }
-                    }
-                }
-            }
-    
-            if (migrator == null || migrationSuccess) {
-                if (!lastMigrationFile.exists()) {
-                    lastMigrationFile.createNewFile();
-                }
-                String version = NexusAPI.getApi().getVersion().getMajor() + "." + NexusAPI.getApi().getVersion().getMinor();
-                if (NexusAPI.getApi().getVersion().getPatch() > 0) {
-                    version += "." + NexusAPI.getApi().getVersion().getPatch();
-                }
-                version += "-" + NexusAPI.getApi().getVersion().getStage().name();
-                try (FileOutputStream fos = new FileOutputStream(lastMigrationFile); BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(fos))) {
-                    writer.write(version);
-                    writer.flush();
-                }
-                getLogger().info("Updated last migration version to the current version.");
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+//            if (migrator != null) {
+//                getLogger().info("Found a Migrator");
+//                int compareResult = NexusAPI.getApi().getVersion().compareTo(previousVersion);
+//                if (compareResult > 0) {
+//                    getLogger().info("Current version is higher than previous version.");
+//                    if (migrator.getTargetVersion().equals(NexusAPI.getApi().getVersion())) {
+//                        getLogger().info("Migrator version is for the current version");
+//                        migrationSuccess = migrator.migrate();
+//                        getLogger().info("Migration success: " + migrationSuccess);
+//                
+//                        if (!migrationSuccess) {
+//                            NexusAPI.logMessage(Level.INFO, "Error while processing migration", "Migrator Class: " + migrator.getClass().getName());
+//                        }
+//                    }
+//                }
+//            }
+//    
+//            if (migrator == null || migrationSuccess) {
+//                if (!lastMigrationFile.exists()) {
+//                    lastMigrationFile.createNewFile();
+//                }
+//                String version = NexusAPI.getApi().getVersion().getMajor() + "." + NexusAPI.getApi().getVersion().getMinor();
+//                if (NexusAPI.getApi().getVersion().getPatch() > 0) {
+//                    version += "." + NexusAPI.getApi().getVersion().getPatch();
+//                }
+//                version += "-" + NexusAPI.getApi().getVersion().getStage().name();
+//                try (FileOutputStream fos = new FileOutputStream(lastMigrationFile); BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(fos))) {
+//                    writer.write(version);
+//                    writer.flush();
+//                }
+//                getLogger().info("Updated last migration version to the current version.");
+//            }
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
         
         if (config.contains("motd")) {
             String line1 = config.getString("motd.line1");
