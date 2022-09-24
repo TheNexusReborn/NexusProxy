@@ -64,8 +64,8 @@
 
     <repositories>
         <repository>
-            <id>spigotmc-repo</id>
-            <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
+            <id>bungeecord-repo</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
         </repository>
     </repositories>
     
@@ -73,14 +73,14 @@
         <dependency>
             <groupId>net.md-5</groupId>
             <artifactId>bungeecord-api</artifactId>
-            <version>1.18-R0.1-SNAPSHOT</version>
+            <version>1.19-R0.1-SNAPSHOT</version>
             <type>jar</type>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.thenexusreborn</groupId>
             <artifactId>NexusAPI</artifactId>
-            <version>1.5.2-ALPHA</version>
+            <version>1.6-ALPHA</version>
             <exclusions>
                 <exclusion>
                     <groupId>io.netty</groupId>
