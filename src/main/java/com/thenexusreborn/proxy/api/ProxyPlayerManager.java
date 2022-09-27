@@ -1,12 +1,13 @@
 package com.thenexusreborn.proxy.api;
 
-import com.thenexusreborn.api.*;
+import com.thenexusreborn.api.NexusAPI;
 import com.thenexusreborn.api.player.*;
 import com.thenexusreborn.api.punishment.*;
 import com.thenexusreborn.api.server.Phase;
 import com.thenexusreborn.api.stats.*;
-import com.thenexusreborn.api.util.*;
-import net.md_5.bungee.api.ChatColor;
+import com.thenexusreborn.api.util.StaffChat;
+import com.thenexusreborn.proxy.NexusProxy;
+import net.md_5.bungee.api.*;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.event.*;
@@ -18,6 +19,13 @@ import java.sql.SQLException;
 import java.util.*;
 
 public class ProxyPlayerManager extends PlayerManager implements Listener {
+    
+    private NexusProxy plugin;
+    
+    public ProxyPlayerManager(NexusProxy plugin) {
+        this.plugin = plugin;
+    }
+    
     @Override
     public NexusPlayer createPlayerData(UUID uniqueId, String name) {
         NexusPlayer player = new NexusPlayer(uniqueId, name);
@@ -26,24 +34,60 @@ public class ProxyPlayerManager extends PlayerManager implements Listener {
     }
     
     @EventHandler
-    public void onPostLogin(PostLoginEvent e) {
-        ProxiedPlayer player = e.getPlayer();
+    public void onLogin(LoginEvent e) {
+        //TODO Use this event for kicking for punishments and private alpha as enough player data is cached for this to be effective
+        if (e.getConnection() == null) {
+            return;
+        }
         
+        if (e.getConnection().getUniqueId() == null) {
+            return;
+        }
+        CachedPlayer cachedPlayer = NexusAPI.getApi().getPlayerManager().getCachedPlayer(e.getConnection().getUniqueId());
+        if (cachedPlayer == null) {
+            return;
+        }
         
+        Punishment activePunishment = checkPunishments(cachedPlayer.getUniqueId());
+        if (activePunishment != null) {
+            e.setCancelled(true);
+            e.setCancelReason(TextComponent.fromLegacyText(ChatColor.translateAlternateColorCodes('&', activePunishment.formatKick())));
+            return;
+        }
         
-        List<Punishment> punishments = NexusAPI.getApi().getPunishmentManager().getPunishmentsByTarget(player.getUniqueId());
+        if (!cachedPlayer.isPrivateAlpha() && cachedPlayer.getRank().ordinal() > Rank.HELPER.ordinal()) {
+            e.setCancelled(true);
+            String privateAlphaMessage = "&d&lThe Nexus Reborn &e&lPRIVATE ALPHA\n" + 
+                    "&aThank you for your interest in &dThe Nexus Reborn\n" + 
+                    "&aHowever we are currently in &ePrivate Alpha &aand therefore it is whitelist only\n" + 
+                    "&aIf you would like to participate, you must be active\n" + 
+                    "And join the &ePrivate Alpha Discord &ahere&b https://discord.gg/hkRn9jQbeb\n" + 
+                    "&aIf you do not wish to be a part of the &ePrivate Alpha\n" + 
+                    "&aPlease join the &fPublic Discord &afor updates until &6Public Beta&a:&b https://discord.gg/bawZKSWEpT";
+            e.setCancelReason(TextComponent.fromLegacyText(ChatColor.translateAlternateColorCodes('&', privateAlphaMessage)));
+        }
+    }
+    
+    private Punishment checkPunishments(UUID uniqueId) {
+        List<Punishment> punishments = NexusAPI.getApi().getPunishmentManager().getPunishmentsByTarget(uniqueId);
         if (punishments.size() > 0) {
             for (Punishment punishment : punishments) {
                 if (punishment.getType() == PunishmentType.BAN || punishment.getType() == PunishmentType.BLACKLIST) {
                     if (punishment.isActive()) {
-                        if (!PlayerManager.NEXUS_TEAM.contains(player.getUniqueId())) {
-                            player.disconnect(TextComponent.fromLegacyText(ChatColor.translateAlternateColorCodes('&', punishment.formatKick())));
-                            return;
+                        if (!PlayerManager.NEXUS_TEAM.contains(uniqueId)) {
+                            return punishment;
                         }
                     }
                 }
             }
         }
+        return null;
+    }
+    
+    @EventHandler
+    public void onPostLogin(PostLoginEvent e) {
+        plugin.getLogger().info("PostLoginEvent " + e.getPlayer().getUniqueId() + "/" + e.getPlayer().getName());
+        ProxiedPlayer player = e.getPlayer();
         
         if (!getPlayers().containsKey(player.getUniqueId())) {
             NexusAPI.getApi().getThreadFactory().runAsync(() -> {
@@ -57,13 +101,18 @@ public class ProxyPlayerManager extends PlayerManager implements Listener {
                         ex.printStackTrace();
                     }
                 }
+                
+                if (ProxyServer.getInstance().getPlayer(nexusPlayer.getUniqueId()) == null) {
+                    return;
+                }
+                
                 if (nexusPlayer.getFirstJoined() == 0) {
                     nexusPlayer.setFirstJoined(System.currentTimeMillis());
                 }
                 nexusPlayer.setLastLogin(System.currentTimeMillis());
                 
-                if (!nexusPlayer.getName().equals(nexusPlayer.getPlayer().getName())) {
-                    nexusPlayer.setName(nexusPlayer.getPlayer().getName());
+                if (!nexusPlayer.getName().equals(player.getName())) {
+                    nexusPlayer.setName(player.getName());
                 }
                 
                 if (NexusAPI.PHASE == Phase.ALPHA) {

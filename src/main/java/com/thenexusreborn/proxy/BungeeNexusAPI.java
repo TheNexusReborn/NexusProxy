@@ -24,7 +24,7 @@ public class BungeeNexusAPI extends NexusAPI {
     private final NexusProxy plugin;
     
     public BungeeNexusAPI(NexusProxy plugin) {
-        super(Environment.valueOf(plugin.getConfig().getString("environment")), NetworkContext.SERVER, plugin.getLogger(), new ProxyPlayerManager(), new ProxyThreadFactory(plugin), new ProxyPlayerFactory(plugin), new ProxyServerManager(plugin));
+        super(Environment.valueOf(plugin.getConfig().getString("environment")), NetworkContext.SERVER, plugin.getLogger(), new ProxyPlayerManager(plugin), new ProxyThreadFactory(plugin), new ProxyPlayerFactory(plugin), new ProxyServerManager(plugin));
         this.plugin = plugin;
     }
     
