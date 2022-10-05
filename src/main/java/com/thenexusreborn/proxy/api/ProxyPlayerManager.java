@@ -143,7 +143,7 @@ public class ProxyPlayerManager extends PlayerManager implements Listener {
             NexusAPI.getApi().getThreadFactory().runAsync(() -> {
                 nexusPlayer.setLastLogout(System.currentTimeMillis());
                 long playTime = nexusPlayer.getLastLogout() - nexusPlayer.getLastLogin();
-                nexusPlayer.changeStat("playtime", (playTime / 50), StatOperator.ADD);
+                nexusPlayer.getStats().change("playtime", (playTime / 50), StatOperator.ADD);
                 StatHelper.consolidateStats(nexusPlayer);
                 saveToMySQLAsync(nexusPlayer);
             });
