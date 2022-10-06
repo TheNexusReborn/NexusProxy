@@ -23,7 +23,7 @@ public class NetworkCmd extends Command {
             senderRank = Rank.ADMIN;
         } else {
             NexusPlayer nexusPlayer = NexusAPI.getApi().getPlayerManager().getNexusPlayer(((ProxiedPlayer) sender).getUniqueId());
-            senderRank = nexusPlayer.getRank();
+            senderRank = nexusPlayer.getRanks().get();
         }
         
         if (senderRank.ordinal() > Rank.ADMIN.ordinal()) {

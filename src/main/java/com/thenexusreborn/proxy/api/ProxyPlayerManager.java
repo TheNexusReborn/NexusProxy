@@ -55,7 +55,7 @@ public class ProxyPlayerManager extends PlayerManager implements Listener {
             return;
         }
         
-        if (!cachedPlayer.isPrivateAlpha() && cachedPlayer.getRank().ordinal() > Rank.HELPER.ordinal()) {
+        if (!cachedPlayer.isPrivateAlpha() && cachedPlayer.getRanks().get().ordinal() > Rank.HELPER.ordinal()) {
             e.setCancelled(true);
             String privateAlphaMessage = "&d&lThe Nexus Reborn &e&lPRIVATE ALPHA\n" + 
                     "&aThank you for your interest in &dThe Nexus Reborn\n" + 
@@ -148,7 +148,7 @@ public class ProxyPlayerManager extends PlayerManager implements Listener {
                 saveToMySQLAsync(nexusPlayer);
             });
             this.players.remove(nexusPlayer.getUniqueId());
-            if (nexusPlayer.getRank().ordinal() <= Rank.MEDIA.ordinal()) {
+            if (nexusPlayer.getRanks().get().ordinal() <= Rank.MEDIA.ordinal()) {
                 StaffChat.sendDisconnect(nexusPlayer);
             }
             this.handlePlayerLeave(nexusPlayer);
