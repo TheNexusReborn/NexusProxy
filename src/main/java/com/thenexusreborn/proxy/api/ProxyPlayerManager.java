@@ -86,7 +86,6 @@ public class ProxyPlayerManager extends PlayerManager implements Listener {
     
     @EventHandler
     public void onPostLogin(PostLoginEvent e) {
-        plugin.getLogger().info("PostLoginEvent " + e.getPlayer().getUniqueId() + "/" + e.getPlayer().getName());
         ProxiedPlayer player = e.getPlayer();
         
         if (!getPlayers().containsKey(player.getUniqueId())) {
