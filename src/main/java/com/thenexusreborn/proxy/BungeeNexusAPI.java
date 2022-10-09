@@ -1,7 +1,7 @@
 package com.thenexusreborn.proxy;
 
 import com.thenexusreborn.api.*;
-import com.thenexusreborn.api.data.objects.Database;
+import com.thenexusreborn.api.storage.objects.Database;
 import com.thenexusreborn.api.network.NetworkContext;
 import com.thenexusreborn.api.network.cmd.NetworkCommand;
 import com.thenexusreborn.api.player.*;
