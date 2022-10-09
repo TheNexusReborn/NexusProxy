@@ -35,7 +35,6 @@ public class ProxyPlayerManager extends PlayerManager implements Listener {
     
     @EventHandler
     public void onLogin(LoginEvent e) {
-        //TODO Use this event for kicking for punishments and private alpha as enough player data is cached for this to be effective
         if (e.getConnection() == null) {
             return;
         }
@@ -45,26 +44,42 @@ public class ProxyPlayerManager extends PlayerManager implements Listener {
         }
         CachedPlayer cachedPlayer = NexusAPI.getApi().getPlayerManager().getCachedPlayer(e.getConnection().getUniqueId());
         if (cachedPlayer == null) {
-            return;
+            NexusAPI.getApi().getThreadFactory().runAsync(() -> {
+                NexusPlayer nexusPlayer = new NexusPlayer(e.getConnection().getUniqueId());
+                if (e.getConnection().getName() != null && !e.getConnection().getName().equalsIgnoreCase("")) {
+                    nexusPlayer.setName(e.getConnection().getName());
+                }
+                nexusPlayer.setFirstJoined(System.currentTimeMillis());
+                nexusPlayer.setLastLogin(System.currentTimeMillis());
+                nexusPlayer.setLastLogout(System.currentTimeMillis());
+                NexusAPI.getApi().getPrimaryDatabase().push(nexusPlayer);
+                CachedPlayer player = new CachedPlayer(nexusPlayer);
+                NexusAPI.getApi().getPlayerManager().getCachedPlayers().put(nexusPlayer.getUniqueId(), player);
+                NexusAPI.getApi().getNetworkManager().send("playercreate", nexusPlayer.getUniqueId().toString());
+            });
         }
         
-        Punishment activePunishment = checkPunishments(cachedPlayer.getUniqueId());
-        if (activePunishment != null) {
-            e.setCancelled(true);
-            e.setCancelReason(TextComponent.fromLegacyText(ChatColor.translateAlternateColorCodes('&', activePunishment.formatKick())));
-            return;
+        if (cachedPlayer != null) {
+            Punishment activePunishment = checkPunishments(cachedPlayer.getUniqueId());
+            if (activePunishment != null) {
+                e.setCancelled(true);
+                e.setCancelReason(TextComponent.fromLegacyText(ChatColor.translateAlternateColorCodes('&', activePunishment.formatKick())));
+                return;
+            }
         }
         
-        if (!cachedPlayer.isPrivateAlpha() && cachedPlayer.getRanks().get().ordinal() > Rank.HELPER.ordinal()) {
-            e.setCancelled(true);
-            String privateAlphaMessage = "&d&lThe Nexus Reborn &e&lPRIVATE ALPHA\n" + 
-                    "&aThank you for your interest in &dThe Nexus Reborn\n" + 
-                    "&aHowever we are currently in &ePrivate Alpha &aand therefore it is whitelist only\n" + 
-                    "&aIf you would like to participate, you must be active\n" + 
-                    "And join the &ePrivate Alpha Discord &ahere&b https://discord.gg/hkRn9jQbeb\n" + 
-                    "&aIf you do not wish to be a part of the &ePrivate Alpha\n" + 
-                    "&aPlease join the &fPublic Discord &afor updates until &6Public Beta&a:&b https://discord.gg/bawZKSWEpT";
-            e.setCancelReason(TextComponent.fromLegacyText(ChatColor.translateAlternateColorCodes('&', privateAlphaMessage)));
+        if (NexusAPI.PHASE == Phase.PRIVATE_ALPHA) {
+            if (cachedPlayer == null || (!cachedPlayer.isPrivateAlpha() && cachedPlayer.getRanks().get().ordinal() > Rank.HELPER.ordinal())) {
+                e.setCancelled(true);
+                String privateAlphaMessage = "&d&lThe Nexus Reborn &e&lPRIVATE ALPHA\n" +
+                        "&aThank you for your interest in &dThe Nexus Reborn\n" +
+                        "&aHowever we are currently in &ePrivate Alpha &aand therefore it is whitelist only\n" +
+                        "&aIf you would like to participate, you must be active\n" +
+                        "And join the &ePrivate Alpha Discord &ahere&b https://discord.gg/hkRn9jQbeb\n" +
+                        "&aIf you do not wish to be a part of the &ePrivate Alpha\n" +
+                        "&aPlease join the &fPublic Discord &afor updates until &6Public Beta&a:&b https://discord.gg/bawZKSWEpT";
+                e.setCancelReason(TextComponent.fromLegacyText(ChatColor.translateAlternateColorCodes('&', privateAlphaMessage)));
+            }
         }
     }
     
