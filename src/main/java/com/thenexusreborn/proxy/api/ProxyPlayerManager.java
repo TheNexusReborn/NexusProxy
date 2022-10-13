@@ -29,7 +29,7 @@ public class ProxyPlayerManager extends PlayerManager implements Listener {
     @Override
     public NexusPlayer createPlayerData(UUID uniqueId, String name) {
         NexusPlayer player = new NexusPlayer(uniqueId, name);
-        player.setPlayerProxy(NexusAPI.getApi().getPlayerFactory().createProxy(player));
+        player.setPlayerProxy(PlayerProxy.of(uniqueId));
         return player;
     }
     
