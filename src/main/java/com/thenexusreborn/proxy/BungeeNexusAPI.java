@@ -118,7 +118,7 @@ public class BungeeNexusAPI extends NexusAPI {
     }
     
     @Override
-    public void registerPreferences(PreferenceRegistry registry) {
+    public void registerToggles(ToggleRegistry registry) {
         
     }
     
