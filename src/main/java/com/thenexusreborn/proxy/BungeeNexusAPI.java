@@ -1,13 +1,13 @@
 package com.thenexusreborn.proxy;
 
 import com.thenexusreborn.api.*;
-import com.thenexusreborn.api.data.objects.Database;
+import com.thenexusreborn.api.storage.objects.Database;
 import com.thenexusreborn.api.network.NetworkContext;
 import com.thenexusreborn.api.network.cmd.NetworkCommand;
 import com.thenexusreborn.api.player.*;
 import com.thenexusreborn.api.punishment.*;
 import com.thenexusreborn.api.registry.*;
-import com.thenexusreborn.api.util.Environment;
+import com.thenexusreborn.api.server.Environment;
 import com.thenexusreborn.proxy.api.*;
 import net.md_5.bungee.api.*;
 import net.md_5.bungee.api.chat.*;
@@ -24,8 +24,9 @@ public class BungeeNexusAPI extends NexusAPI {
     private final NexusProxy plugin;
     
     public BungeeNexusAPI(NexusProxy plugin) {
-        super(Environment.valueOf(plugin.getConfig().getString("environment")), NetworkContext.SERVER, plugin.getLogger(), new ProxyPlayerManager(), new ProxyThreadFactory(plugin), new ProxyPlayerFactory(plugin), new ProxyServerManager(plugin));
+        super(Environment.valueOf(plugin.getConfig().getString("environment")), NetworkContext.SERVER, plugin.getLogger(), new ProxyPlayerManager(plugin), new ProxyThreadFactory(plugin), new ProxyServerManager(plugin));
         this.plugin = plugin;
+        PlayerProxy.setProxyClass(ProxyPlayerProxy.class);
     }
     
     @Override
@@ -80,7 +81,7 @@ public class BungeeNexusAPI extends NexusAPI {
                     
                     if (punishment.isActive() || punishment.getType() == PunishmentType.KICK) {
                         BaseComponent[] disconnectMsg = TextComponent.fromLegacyText(ChatColor.translateAlternateColorCodes('&', punishment.formatKick()));
-                        if (punishedPlayer.getRank() == Rank.NEXUS) {
+                        if (punishedPlayer.getRanks().get() == Rank.NEXUS) {
                             punishedPlayer.sendMessage("&6&l>> &cSomeone tried to " + punishment.getType().name().toLowerCase() + " you, but you are immune.");
                         } else {
                             proxiedPlayer.disconnect(disconnectMsg);
@@ -117,7 +118,7 @@ public class BungeeNexusAPI extends NexusAPI {
     }
     
     @Override
-    public void registerPreferences(PreferenceRegistry registry) {
+    public void registerToggles(ToggleRegistry registry) {
         
     }
     

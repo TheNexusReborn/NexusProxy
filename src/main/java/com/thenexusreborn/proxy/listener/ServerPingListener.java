@@ -1,6 +1,5 @@
 package com.thenexusreborn.proxy.listener;
 
-import com.thenexusreborn.api.NexusAPI;
 import com.thenexusreborn.proxy.NexusProxy;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -23,12 +22,8 @@ public class ServerPingListener implements Listener {
             description += plugin.getMotd().getLine1();
         }
         
-        if (NexusAPI.getApi().getTournament() != null && NexusAPI.getApi().getTournament().isActive()) {
-            description += "\n&a" + NexusAPI.getApi().getTournament().getName();
-        } else {
-            if (plugin.getMotd().getLine2() != null && !plugin.getMotd().getLine2().equals("")) {
-                description += "\n" + plugin.getMotd().getLine2();
-            }
+        if (plugin.getMotd().getLine2() != null && !plugin.getMotd().getLine2().equals("")) {
+            description += "\n" + plugin.getMotd().getLine2();
         }
         
         if (description != null && !description.equals("")) {

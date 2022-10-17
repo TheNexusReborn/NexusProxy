@@ -7,16 +7,14 @@ import net.md_5.bungee.api.connection.ProxiedPlayer;
 
 import java.util.UUID;
 
-public class ProxyPlayerProxy implements PlayerProxy {
-    private UUID uuid;
-    
+public class ProxyPlayerProxy extends PlayerProxy {
     public ProxyPlayerProxy(UUID uuid) {
-        this.uuid = uuid;
+        super(uuid);
     }
     
     @Override
     public void sendMessage(String message) {
-        ProxiedPlayer player = ProxyServer.getInstance().getPlayer(uuid);
+        ProxiedPlayer player = ProxyServer.getInstance().getPlayer(uniqueId);
         if (player != null) {
             player.sendMessage(TextComponent.fromLegacyText(message));
         }
@@ -24,11 +22,11 @@ public class ProxyPlayerProxy implements PlayerProxy {
     
     @Override
     public boolean isOnline() {
-        return ProxyServer.getInstance().getPlayer(uuid) != null;
+        return ProxyServer.getInstance().getPlayer(uniqueId) != null;
     }
     
     @Override
     public String getName() {
-        return ProxyServer.getInstance().getPlayer(uuid).getName();
+        return ProxyServer.getInstance().getPlayer(uniqueId).getName();
     }
 }
