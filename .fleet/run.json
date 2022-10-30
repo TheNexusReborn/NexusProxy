@@ -1,0 +1,13 @@
+{
+  "configurations": [
+    {
+      "type": "maven",
+      "name": "NexusProxy build",
+      "tasks": [
+        "clean",
+        "package",
+        "install"
+      ]
+    }
+  ]
+}
