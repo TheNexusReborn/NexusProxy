@@ -69,7 +69,7 @@ public class ProxyPlayerManager extends PlayerManager implements Listener {
         }
         
         if (NexusAPI.PHASE == Phase.PRIVATE_ALPHA) {
-            if (cachedPlayer == null || (!cachedPlayer.isPrivateAlpha() && cachedPlayer.getRanks().get().ordinal() > Rank.HELPER.ordinal())) {
+            if (cachedPlayer == null || (!NexusAPI.getApi().getPrivateAlphaUsers().containsKey(cachedPlayer.getUniqueId()) && cachedPlayer.getRanks().get().ordinal() > Rank.HELPER.ordinal())) {
                 e.setCancelled(true);
                 String privateAlphaMessage = "&d&lThe Nexus Reborn &e&lPRIVATE ALPHA\n" +
                         "&aThank you for your interest in &dThe Nexus Reborn\n" +
