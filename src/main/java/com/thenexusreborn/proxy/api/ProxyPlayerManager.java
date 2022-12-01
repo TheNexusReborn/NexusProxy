@@ -22,6 +22,8 @@ public class ProxyPlayerManager extends PlayerManager implements Listener {
     
     private NexusProxy plugin;
     
+    private Map<UUID, Long> loginTimes = new HashMap<>();
+    
     public ProxyPlayerManager(NexusProxy plugin) {
         this.plugin = plugin;
     }
@@ -125,6 +127,7 @@ public class ProxyPlayerManager extends PlayerManager implements Listener {
                     nexusPlayer.setFirstJoined(System.currentTimeMillis());
                 }
                 nexusPlayer.setLastLogin(System.currentTimeMillis());
+                this.loginTimes.put(nexusPlayer.getUniqueId(), System.currentTimeMillis());
                 
                 if (!nexusPlayer.getName().equals(player.getName())) {
                     nexusPlayer.setName(player.getName());
@@ -157,10 +160,11 @@ public class ProxyPlayerManager extends PlayerManager implements Listener {
         if (nexusPlayer != null) {
             NexusAPI.getApi().getThreadFactory().runAsync(() -> {
                 nexusPlayer.setLastLogout(System.currentTimeMillis());
-                long playTime = nexusPlayer.getLastLogout() - nexusPlayer.getLastLogin();
-                nexusPlayer.getStats().change("playtime", (playTime / 50), StatOperator.ADD);
+                long playTime = System.currentTimeMillis() - this.loginTimes.get(nexusPlayer.getUniqueId());
+                this.loginTimes.remove(nexusPlayer.getUniqueId());
+                nexusPlayer.getStats().change("playtime", playTime, StatOperator.ADD);
                 StatHelper.consolidateStats(nexusPlayer);
-                saveToMySQLAsync(nexusPlayer);
+                NexusAPI.getApi().getPrimaryDatabase().push(nexusPlayer);
             });
             this.players.remove(nexusPlayer.getUniqueId());
             if (nexusPlayer.getRanks().get().ordinal() <= Rank.MEDIA.ordinal()) {
