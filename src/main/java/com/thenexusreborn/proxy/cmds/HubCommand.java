@@ -16,12 +16,11 @@ public class HubCommand extends Command {
     
     @Override
     public void execute(CommandSender sender, String[] args) {
-        if (!(sender instanceof ProxiedPlayer)) {
+        if (!(sender instanceof ProxiedPlayer player)) {
             sender.sendMessage(new ComponentBuilder("Only players may use that command.").color(ChatColor.RED).create());
             return;
         }
-        
-        ProxiedPlayer player = (ProxiedPlayer) sender;
+    
         List<com.thenexusreborn.api.server.ServerInfo> hubServers = NexusAPI.getApi().getServerManager().getServersByType("hub");
     
         if (hubServers.size() == 0) {

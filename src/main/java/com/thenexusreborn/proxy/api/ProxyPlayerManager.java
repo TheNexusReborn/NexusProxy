@@ -71,13 +71,14 @@ public class ProxyPlayerManager extends PlayerManager implements Listener {
         if (NexusAPI.PHASE == Phase.PRIVATE_ALPHA) {
             if (cachedPlayer == null || (!NexusAPI.getApi().getPrivateAlphaUsers().containsKey(cachedPlayer.getUniqueId()) && cachedPlayer.getRanks().get().ordinal() > Rank.HELPER.ordinal())) {
                 e.setCancelled(true);
-                String privateAlphaMessage = "&d&lThe Nexus Reborn &e&lPRIVATE ALPHA\n" +
-                        "&aThank you for your interest in &dThe Nexus Reborn\n" +
-                        "&aHowever we are currently in &ePrivate Alpha &aand therefore it is whitelist only\n" +
-                        "&aIf you would like to participate, you must be active\n" +
-                        "And join the &ePrivate Alpha Discord &ahere&b https://discord.gg/hkRn9jQbeb\n" +
-                        "&aIf you do not wish to be a part of the &ePrivate Alpha\n" +
-                        "&aPlease join the &fPublic Discord &afor updates until &6Public Beta&a:&b https://discord.gg/bawZKSWEpT";
+                String privateAlphaMessage = """
+                        &d&lThe Nexus Reborn &e&lPRIVATE ALPHA
+                        &aThank you for your interest in &dThe Nexus Reborn
+                        &aHowever we are currently in &ePrivate Alpha &aand therefore it is whitelist only
+                        &aIf you would like to participate, you must be active
+                        And join the &ePrivate Alpha Discord &ahere&b https://discord.gg/hkRn9jQbeb
+                        &aIf you do not wish to be a part of the &ePrivate Alpha
+                        &aPlease join the &fPublic Discord &afor updates until &6Public Beta&a:&b https://discord.gg/bawZKSWEpT""";
                 e.setCancelReason(TextComponent.fromLegacyText(ChatColor.translateAlternateColorCodes('&', privateAlphaMessage)));
             }
         }
