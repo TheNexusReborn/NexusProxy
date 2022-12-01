@@ -1,11 +1,13 @@
 package com.thenexusreborn.proxy.api;
 
 import com.thenexusreborn.api.NexusAPI;
+import com.thenexusreborn.api.gamearchive.GameInfo;
 import com.thenexusreborn.api.player.*;
 import com.thenexusreborn.api.punishment.*;
 import com.thenexusreborn.api.server.Phase;
 import com.thenexusreborn.api.stats.*;
-import com.thenexusreborn.api.util.StaffChat;
+import com.thenexusreborn.api.storage.objects.*;
+import com.thenexusreborn.api.util.*;
 import com.thenexusreborn.proxy.NexusProxy;
 import net.md_5.bungee.api.*;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -23,6 +25,7 @@ public class ProxyPlayerManager extends PlayerManager implements Listener {
     private NexusProxy plugin;
     
     private Map<UUID, Long> loginTimes = new HashMap<>();
+    private Map<UUID, Session> sessions = new HashMap<>();
     
     public ProxyPlayerManager(NexusProxy plugin) {
         this.plugin = plugin;
@@ -71,18 +74,24 @@ public class ProxyPlayerManager extends PlayerManager implements Listener {
         }
         
         if (NexusAPI.PHASE == Phase.PRIVATE_ALPHA) {
-            if (cachedPlayer == null || (!NexusAPI.getApi().getPrivateAlphaUsers().containsKey(cachedPlayer.getUniqueId()) && cachedPlayer.getRanks().get().ordinal() > Rank.HELPER.ordinal())) {
-                e.setCancelled(true);
-                String privateAlphaMessage = """
-                        &d&lThe Nexus Reborn &e&lPRIVATE ALPHA
-                        &aThank you for your interest in &dThe Nexus Reborn
-                        &aHowever we are currently in &ePrivate Alpha &aand therefore it is whitelist only
-                        &aIf you would like to participate, you must be active
-                        And join the &ePrivate Alpha Discord &ahere&b https://discord.gg/hkRn9jQbeb
-                        &aIf you do not wish to be a part of the &ePrivate Alpha
-                        &aPlease join the &fPublic Discord &afor updates until &6Public Beta&a:&b https://discord.gg/bawZKSWEpT""";
-                e.setCancelReason(TextComponent.fromLegacyText(ChatColor.translateAlternateColorCodes('&', privateAlphaMessage)));
+            if (NexusAPI.getApi().getPrivateAlphaUsers().containsKey(e.getConnection().getUniqueId())) {
+                return;
             }
+            
+            if (cachedPlayer != null && cachedPlayer.getRanks().get().ordinal() <= Rank.HELPER.ordinal()) {
+                return;
+            }
+            
+            e.setCancelled(true);
+            String privateAlphaMessage = """
+                    &d&lThe Nexus Reborn &e&lPRIVATE ALPHA
+                    &aThank you for your interest in &dThe Nexus Reborn
+                    &aHowever we are currently in &ePrivate Alpha &aand therefore it is whitelist only
+                    &aIf you would like to participate, you must be active
+                    And join the &ePrivate Alpha Discord &ahere&b https://discord.gg/hkRn9jQbeb
+                    &aIf you do not wish to be a part of the &ePrivate Alpha
+                    &aPlease join the &fPublic Discord &afor updates until &6Public Beta&a:&b https://discord.gg/bawZKSWEpT""";
+            e.setCancelReason(TextComponent.fromLegacyText(ChatColor.translateAlternateColorCodes('&', privateAlphaMessage)));
         }
     }
     
@@ -106,6 +115,10 @@ public class ProxyPlayerManager extends PlayerManager implements Listener {
     public void onPostLogin(PostLoginEvent e) {
         ProxiedPlayer player = e.getPlayer();
         
+        Session session = new Session(player.getUniqueId());
+        session.start();
+        this.sessions.put(player.getUniqueId(), session);
+        
         if (!getPlayers().containsKey(player.getUniqueId())) {
             NexusAPI.getApi().getThreadFactory().runAsync(() -> {
                 NexusPlayer nexusPlayer = null;
@@ -128,7 +141,6 @@ public class ProxyPlayerManager extends PlayerManager implements Listener {
                 }
                 nexusPlayer.setLastLogin(System.currentTimeMillis());
                 this.loginTimes.put(nexusPlayer.getUniqueId(), System.currentTimeMillis());
-                
                 if (!nexusPlayer.getName().equals(player.getName())) {
                     nexusPlayer.setName(player.getName());
                 }
@@ -162,6 +174,30 @@ public class ProxyPlayerManager extends PlayerManager implements Listener {
                 nexusPlayer.setLastLogout(System.currentTimeMillis());
                 long playTime = System.currentTimeMillis() - this.loginTimes.get(nexusPlayer.getUniqueId());
                 this.loginTimes.remove(nexusPlayer.getUniqueId());
+                Session session = this.sessions.get(nexusPlayer.getUniqueId());
+                if (session == null) {
+                    plugin.getLogger().severe("There was no session for player " + nexusPlayer.getName());
+                } else {
+                    session.end();
+                    
+                    if (session.getTimeOnline() >= TimeUnit.MINUTES.toMilliseconds(5)) {
+                        Database database = NexusAPI.getApi().getPrimaryDatabase();
+                        Table table = database.getTable(GameInfo.class);
+                        String query = "select * from " + table.getName() + " where `gameStart`>='" + session.getStart() + "' and `gameEnd` <= '" + session.getEnd() + "' and `players` like '%" + nexusPlayer.getName() + "%';";
+                        try {
+                            List<Row> rows = database.executeQuery(query);
+                            session.setGamesPlayed(rows.size());
+                        } catch (SQLException ex) {
+                            NexusAPI.getApi().getLogger().info(query);
+                            ex.printStackTrace();
+                        }
+                        
+                        if (session.getGamesPlayed() > 0) {
+                            database.push(session);
+                        }
+                    }
+                }
+                this.sessions.remove(nexusPlayer.getUniqueId());
                 nexusPlayer.getStats().change("playtime", playTime, StatOperator.ADD);
                 StatHelper.consolidateStats(nexusPlayer);
                 NexusAPI.getApi().getPrimaryDatabase().push(nexusPlayer);
