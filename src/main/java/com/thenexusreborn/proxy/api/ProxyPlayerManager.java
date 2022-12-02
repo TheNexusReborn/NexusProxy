@@ -78,7 +78,7 @@ public class ProxyPlayerManager extends PlayerManager implements Listener {
                 return;
             }
             
-            if (cachedPlayer != null && cachedPlayer.getRanks().get().ordinal() <= Rank.HELPER.ordinal()) {
+            if (cachedPlayer != null && cachedPlayer.getRank().ordinal() <= Rank.HELPER.ordinal()) {
                 return;
             }
             
@@ -198,12 +198,12 @@ public class ProxyPlayerManager extends PlayerManager implements Listener {
                     }
                 }
                 this.sessions.remove(nexusPlayer.getUniqueId());
-                nexusPlayer.getStats().change("playtime", playTime, StatOperator.ADD);
+                nexusPlayer.changeStat("playtime", playTime, StatOperator.ADD);
                 StatHelper.consolidateStats(nexusPlayer);
                 NexusAPI.getApi().getPrimaryDatabase().push(nexusPlayer);
             });
             this.players.remove(nexusPlayer.getUniqueId());
-            if (nexusPlayer.getRanks().get().ordinal() <= Rank.MEDIA.ordinal()) {
+            if (nexusPlayer.getRank().ordinal() <= Rank.MEDIA.ordinal()) {
                 StaffChat.sendDisconnect(nexusPlayer);
             }
             this.handlePlayerLeave(nexusPlayer);

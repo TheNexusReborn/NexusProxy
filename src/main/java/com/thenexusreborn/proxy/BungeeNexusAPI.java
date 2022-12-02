@@ -81,7 +81,7 @@ public class BungeeNexusAPI extends NexusAPI {
                     
                     if (punishment.isActive() || punishment.getType() == PunishmentType.KICK) {
                         BaseComponent[] disconnectMsg = TextComponent.fromLegacyText(ChatColor.translateAlternateColorCodes('&', punishment.formatKick()));
-                        if (punishedPlayer.getRanks().get() == Rank.NEXUS) {
+                        if (punishedPlayer.getRank() == Rank.NEXUS) {
                             punishedPlayer.sendMessage("&6&l>> &cSomeone tried to " + punishment.getType().name().toLowerCase() + " you, but you are immune.");
                         } else {
                             proxiedPlayer.disconnect(disconnectMsg);
