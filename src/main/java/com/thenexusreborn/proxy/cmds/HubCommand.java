@@ -3,7 +3,7 @@ package com.thenexusreborn.proxy.cmds;
 import com.thenexusreborn.api.NexusAPI;
 import com.thenexusreborn.api.server.ServerInfo;
 import net.md_5.bungee.api.*;
-import net.md_5.bungee.api.chat.ComponentBuilder;
+import net.md_5.bungee.api.chat.*;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.plugin.Command;
 
@@ -44,7 +44,7 @@ public class HubCommand extends Command {
                         }
                         findHub(player, hubs);
                     } else {
-                        player.sendMessage(new ComponentBuilder("Sent you to the hub").color(ChatColor.YELLOW).create());
+                        player.sendMessage(TextComponent.fromLegacyText(ChatColor.translateAlternateColorCodes('&', "&6&l>> &fReturning you to the hub... Prepare for blastoff!")));
                     }
                 });
             }
