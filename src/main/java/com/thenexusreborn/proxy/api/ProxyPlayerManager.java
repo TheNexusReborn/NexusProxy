@@ -199,7 +199,7 @@ public class ProxyPlayerManager extends PlayerManager implements Listener {
                     }
                 }
                 this.sessions.remove(nexusPlayer.getUniqueId());
-                nexusPlayer.changeStat("playtime", playTime, StatOperator.ADD);
+                nexusPlayer.changeStat("playtime", playTime, StatOperator.ADD).push();
                 StatHelper.consolidateStats(nexusPlayer);
                 NexusAPI.getApi().getPrimaryDatabase().push(nexusPlayer);
             });
