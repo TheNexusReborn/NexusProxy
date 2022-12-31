@@ -1,7 +1,7 @@
 package com.thenexusreborn.proxy;
 
+import com.starmediadev.starsql.objects.Database;
 import com.thenexusreborn.api.*;
-import com.thenexusreborn.api.storage.objects.Database;
 import com.thenexusreborn.api.network.NetworkContext;
 import com.thenexusreborn.api.network.cmd.NetworkCommand;
 import com.thenexusreborn.api.player.*;
@@ -49,7 +49,7 @@ public class BungeeNexusAPI extends NexusAPI {
                 if (databasesSection.contains(db + ".primary")) {
                     primary = databasesSection.getBoolean(db + ".primary");
                 }
-                Database database = new Database(name, host, user, password, primary);
+                Database database = new Database("mysql", name, host, user, password, primary);
                 registry.register(database);
             }
         }

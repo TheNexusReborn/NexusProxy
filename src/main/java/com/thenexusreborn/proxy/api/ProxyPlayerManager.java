@@ -1,13 +1,13 @@
 package com.thenexusreborn.proxy.api;
 
 import com.starmediadev.starlib.TimeUnit;
+import com.starmediadev.starsql.objects.*;
 import com.thenexusreborn.api.NexusAPI;
 import com.thenexusreborn.api.gamearchive.GameInfo;
 import com.thenexusreborn.api.player.*;
 import com.thenexusreborn.api.punishment.*;
 import com.thenexusreborn.api.server.Phase;
 import com.thenexusreborn.api.stats.*;
-import com.thenexusreborn.api.storage.objects.*;
 import com.thenexusreborn.api.util.StaffChat;
 import com.thenexusreborn.proxy.NexusProxy;
 import net.md_5.bungee.api.*;
@@ -58,7 +58,7 @@ public class ProxyPlayerManager extends PlayerManager implements Listener {
                 nexusPlayer.setFirstJoined(System.currentTimeMillis());
                 nexusPlayer.setLastLogin(System.currentTimeMillis());
                 nexusPlayer.setLastLogout(System.currentTimeMillis());
-                NexusAPI.getApi().getPrimaryDatabase().push(nexusPlayer);
+                NexusAPI.getApi().getPrimaryDatabase().pushSilent(nexusPlayer);
                 CachedPlayer player = new CachedPlayer(nexusPlayer);
                 NexusAPI.getApi().getPlayerManager().getCachedPlayers().put(nexusPlayer.getUniqueId(), player);
                 NexusAPI.getApi().getNetworkManager().send("playercreate", nexusPlayer.getUniqueId().toString());
@@ -98,7 +98,7 @@ public class ProxyPlayerManager extends PlayerManager implements Listener {
     
     private Punishment checkPunishments(UUID uniqueId) {
         List<Punishment> punishments = NexusAPI.getApi().getPunishmentManager().getPunishmentsByTarget(uniqueId);
-        if (punishments.size() > 0) {
+        if (!punishments.isEmpty()) {
             for (Punishment punishment : punishments) {
                 if (punishment.getType() == PunishmentType.BAN || punishment.getType() == PunishmentType.BLACKLIST) {
                     if (punishment.isActive()) {
@@ -156,7 +156,7 @@ public class ProxyPlayerManager extends PlayerManager implements Listener {
                     }
                 }
                 
-                NexusAPI.getApi().getPrimaryDatabase().push(nexusPlayer);
+                NexusAPI.getApi().getPrimaryDatabase().pushSilent(nexusPlayer);
                 
                 getPlayers().put(nexusPlayer.getUniqueId(), nexusPlayer);
                 cachedPlayers.put(nexusPlayer.getUniqueId(), new CachedPlayer(nexusPlayer));
@@ -194,14 +194,14 @@ public class ProxyPlayerManager extends PlayerManager implements Listener {
                         }
                         
                         if (session.getGamesPlayed() > 0) {
-                            database.push(session);
+                            database.pushSilent(session);
                         }
                     }
                 }
                 this.sessions.remove(nexusPlayer.getUniqueId());
                 nexusPlayer.changeStat("playtime", playTime, StatOperator.ADD).push();
                 StatHelper.consolidateStats(nexusPlayer);
-                NexusAPI.getApi().getPrimaryDatabase().push(nexusPlayer);
+                NexusAPI.getApi().getPrimaryDatabase().pushSilent(nexusPlayer);
             });
             this.players.remove(nexusPlayer.getUniqueId());
             if (nexusPlayer.getRank().ordinal() <= Rank.MEDIA.ordinal()) {
