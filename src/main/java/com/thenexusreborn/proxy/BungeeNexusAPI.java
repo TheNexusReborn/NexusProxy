@@ -49,7 +49,7 @@ public class BungeeNexusAPI extends NexusAPI {
                 if (databasesSection.contains(db + ".primary")) {
                     primary = databasesSection.getBoolean(db + ".primary");
                 }
-                Database database = new Database("mysql", name, host, user, password, primary);
+                Database database = new Database(logger, "mysql", name, host, user, password, primary);
                 registry.register(database);
             }
         }
