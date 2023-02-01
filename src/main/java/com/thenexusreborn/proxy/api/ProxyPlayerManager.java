@@ -58,7 +58,7 @@ public class ProxyPlayerManager extends PlayerManager implements Listener {
                 nexusPlayer.setFirstJoined(System.currentTimeMillis());
                 nexusPlayer.setLastLogin(System.currentTimeMillis());
                 nexusPlayer.setLastLogout(System.currentTimeMillis());
-                NexusAPI.getApi().getPrimaryDatabase().pushSilent(nexusPlayer);
+                NexusAPI.getApi().getPrimaryDatabase().saveSilent(nexusPlayer);
                 CachedPlayer player = new CachedPlayer(nexusPlayer);
                 NexusAPI.getApi().getPlayerManager().getCachedPlayers().put(nexusPlayer.getUniqueId(), player);
                 NexusAPI.getApi().getNetworkManager().send("playercreate", nexusPlayer.getUniqueId().toString());
@@ -156,7 +156,7 @@ public class ProxyPlayerManager extends PlayerManager implements Listener {
                     }
                 }
                 
-                NexusAPI.getApi().getPrimaryDatabase().pushSilent(nexusPlayer);
+                NexusAPI.getApi().getPrimaryDatabase().saveSilent(nexusPlayer);
                 
                 getPlayers().put(nexusPlayer.getUniqueId(), nexusPlayer);
                 cachedPlayers.put(nexusPlayer.getUniqueId(), new CachedPlayer(nexusPlayer));
@@ -194,14 +194,14 @@ public class ProxyPlayerManager extends PlayerManager implements Listener {
                         }
                         
                         if (session.getGamesPlayed() > 0) {
-                            database.pushSilent(session);
+                            database.saveSilent(session);
                         }
                     }
                 }
                 this.sessions.remove(nexusPlayer.getUniqueId());
                 nexusPlayer.changeStat("playtime", playTime, StatOperator.ADD).push();
                 StatHelper.consolidateStats(nexusPlayer);
-                NexusAPI.getApi().getPrimaryDatabase().pushSilent(nexusPlayer);
+                NexusAPI.getApi().getPrimaryDatabase().saveSilent(nexusPlayer);
             });
             this.players.remove(nexusPlayer.getUniqueId());
             if (nexusPlayer.getRank().ordinal() <= Rank.MEDIA.ordinal()) {
