@@ -48,7 +48,9 @@ public class ProxyPlayerManager extends PlayerManager implements Listener {
         if (e.getConnection().getUniqueId() == null) {
             return;
         }
-        CachedPlayer cachedPlayer = NexusAPI.getApi().getPlayerManager().getCachedPlayer(e.getConnection().getUniqueId());
+        PlayerManager playerManager = NexusAPI.getApi().getPlayerManager();
+        System.out.println("Total Cached Players " + playerManager.getCachedPlayers().size());
+        CachedPlayer cachedPlayer = playerManager.getCachedPlayer(e.getConnection().getUniqueId());
         if (cachedPlayer == null) {
             NexusAPI.getApi().getThreadFactory().runAsync(() -> {
                 NexusPlayer nexusPlayer = new NexusPlayer(e.getConnection().getUniqueId());
@@ -60,7 +62,7 @@ public class ProxyPlayerManager extends PlayerManager implements Listener {
                 nexusPlayer.setLastLogout(System.currentTimeMillis());
                 NexusAPI.getApi().getPrimaryDatabase().saveSilent(nexusPlayer);
                 CachedPlayer player = new CachedPlayer(nexusPlayer);
-                NexusAPI.getApi().getPlayerManager().getCachedPlayers().put(nexusPlayer.getUniqueId(), player);
+                playerManager.getCachedPlayers().put(nexusPlayer.getUniqueId(), player);
                 NexusAPI.getApi().getNetworkManager().send("playercreate", nexusPlayer.getUniqueId().toString());
             });
         }
