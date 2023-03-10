@@ -1,6 +1,6 @@
 package com.thenexusreborn.proxy.api;
 
-import com.starmediadev.starlib.TimeUnit;
+import com.starmediadev.starlib.util.TimeUnit;
 import com.starmediadev.starsql.objects.*;
 import com.thenexusreborn.api.NexusAPI;
 import com.thenexusreborn.api.gamearchive.GameInfo;
