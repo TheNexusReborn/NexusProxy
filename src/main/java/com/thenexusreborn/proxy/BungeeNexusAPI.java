@@ -9,6 +9,7 @@ import com.thenexusreborn.api.punishment.*;
 import com.thenexusreborn.api.registry.*;
 import com.thenexusreborn.api.server.Environment;
 import com.thenexusreborn.proxy.api.*;
+import com.thenexusreborn.proxy.api.scheduler.ProxyScheduler;
 import net.md_5.bungee.api.*;
 import net.md_5.bungee.api.chat.*;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
@@ -24,7 +25,7 @@ public class BungeeNexusAPI extends NexusAPI {
     private final NexusProxy plugin;
     
     public BungeeNexusAPI(NexusProxy plugin) {
-        super(Environment.valueOf(plugin.getConfig().getString("environment")), NetworkContext.SERVER, plugin.getLogger(), new ProxyPlayerManager(plugin), new ProxyThreadFactory(plugin), new ProxyServerManager(plugin));
+        super(Environment.valueOf(plugin.getConfig().getString("environment")), NetworkContext.SERVER, plugin.getLogger(), new ProxyPlayerManager(plugin), new ProxyScheduler(plugin), new ProxyServerManager(plugin));
         this.plugin = plugin;
         PlayerProxy.setProxyClass(ProxyPlayerProxy.class);
     }

@@ -49,10 +49,9 @@ public class ProxyPlayerManager extends PlayerManager implements Listener {
             return;
         }
         PlayerManager playerManager = NexusAPI.getApi().getPlayerManager();
-        System.out.println("Total Cached Players " + playerManager.getCachedPlayers().size());
         CachedPlayer cachedPlayer = playerManager.getCachedPlayer(e.getConnection().getUniqueId());
         if (cachedPlayer == null) {
-            NexusAPI.getApi().getThreadFactory().runAsync(() -> {
+            NexusAPI.getApi().getScheduler().runTaskAsynchronously(() -> {
                 NexusPlayer nexusPlayer = new NexusPlayer(e.getConnection().getUniqueId());
                 if (e.getConnection().getName() != null && !e.getConnection().getName().equalsIgnoreCase("")) {
                     nexusPlayer.setName(e.getConnection().getName());
@@ -123,7 +122,7 @@ public class ProxyPlayerManager extends PlayerManager implements Listener {
         this.sessions.put(player.getUniqueId(), session);
         
         if (!getPlayers().containsKey(player.getUniqueId())) {
-            NexusAPI.getApi().getThreadFactory().runAsync(() -> {
+            NexusAPI.getApi().getScheduler().runTaskAsynchronously(() -> {
                 NexusPlayer nexusPlayer = null;
                 if (!hasData(player.getUniqueId())) {
                     nexusPlayer = createPlayerData(player.getUniqueId(), player.getName());
@@ -173,7 +172,7 @@ public class ProxyPlayerManager extends PlayerManager implements Listener {
     public void onPlayerDisconnect(PlayerDisconnectEvent e) {
         NexusPlayer nexusPlayer = getPlayers().get(e.getPlayer().getUniqueId());
         if (nexusPlayer != null) {
-            NexusAPI.getApi().getThreadFactory().runAsync(() -> {
+            NexusAPI.getApi().getScheduler().runTaskAsynchronously(() -> {
                 nexusPlayer.setLastLogout(System.currentTimeMillis());
                 long playTime = System.currentTimeMillis() - this.loginTimes.get(nexusPlayer.getUniqueId());
                 this.loginTimes.remove(nexusPlayer.getUniqueId());
