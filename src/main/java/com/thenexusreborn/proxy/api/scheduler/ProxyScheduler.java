@@ -1,7 +1,6 @@
 package com.thenexusreborn.proxy.api.scheduler;
 
 import com.starmediadev.starlib.scheduler.*;
-import com.thenexusreborn.proxy.api.scheduler.ProxyTask;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.plugin.Plugin;
 
