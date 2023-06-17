@@ -1,6 +1,5 @@
 package com.thenexusreborn.proxy.api;
 
-import com.starmediadev.starlib.TimeUnit;
 import com.starmediadev.starsql.objects.*;
 import com.thenexusreborn.api.NexusAPI;
 import com.thenexusreborn.api.gamearchive.GameInfo;
@@ -20,6 +19,7 @@ import net.md_5.bungee.event.EventHandler;
 import java.net.InetSocketAddress;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 public class ProxyPlayerManager extends PlayerManager implements Listener {
     
@@ -50,7 +50,7 @@ public class ProxyPlayerManager extends PlayerManager implements Listener {
         }
         CachedPlayer cachedPlayer = NexusAPI.getApi().getPlayerManager().getCachedPlayer(e.getConnection().getUniqueId());
         if (cachedPlayer == null) {
-            NexusAPI.getApi().getThreadFactory().runAsync(() -> {
+            NexusAPI.getApi().getScheduler().runTaskAsynchronously(() -> {
                 NexusPlayer nexusPlayer = new NexusPlayer(e.getConnection().getUniqueId());
                 if (e.getConnection().getName() != null && !e.getConnection().getName().equalsIgnoreCase("")) {
                     nexusPlayer.setName(e.getConnection().getName());
@@ -58,7 +58,7 @@ public class ProxyPlayerManager extends PlayerManager implements Listener {
                 nexusPlayer.setFirstJoined(System.currentTimeMillis());
                 nexusPlayer.setLastLogin(System.currentTimeMillis());
                 nexusPlayer.setLastLogout(System.currentTimeMillis());
-                NexusAPI.getApi().getPrimaryDatabase().pushSilent(nexusPlayer);
+                NexusAPI.getApi().getPrimaryDatabase().saveSilent(nexusPlayer);
                 CachedPlayer player = new CachedPlayer(nexusPlayer);
                 NexusAPI.getApi().getPlayerManager().getCachedPlayers().put(nexusPlayer.getUniqueId(), player);
                 NexusAPI.getApi().getNetworkManager().send("playercreate", nexusPlayer.getUniqueId().toString());
@@ -121,7 +121,7 @@ public class ProxyPlayerManager extends PlayerManager implements Listener {
         this.sessions.put(player.getUniqueId(), session);
         
         if (!getPlayers().containsKey(player.getUniqueId())) {
-            NexusAPI.getApi().getThreadFactory().runAsync(() -> {
+            NexusAPI.getApi().getScheduler().runTaskAsynchronously(() -> {
                 NexusPlayer nexusPlayer = null;
                 if (!hasData(player.getUniqueId())) {
                     nexusPlayer = createPlayerData(player.getUniqueId(), player.getName());
@@ -156,7 +156,7 @@ public class ProxyPlayerManager extends PlayerManager implements Listener {
                     }
                 }
                 
-                NexusAPI.getApi().getPrimaryDatabase().pushSilent(nexusPlayer);
+                NexusAPI.getApi().getPrimaryDatabase().saveSilent(nexusPlayer);
                 
                 getPlayers().put(nexusPlayer.getUniqueId(), nexusPlayer);
                 cachedPlayers.put(nexusPlayer.getUniqueId(), new CachedPlayer(nexusPlayer));
@@ -171,7 +171,7 @@ public class ProxyPlayerManager extends PlayerManager implements Listener {
     public void onPlayerDisconnect(PlayerDisconnectEvent e) {
         NexusPlayer nexusPlayer = getPlayers().get(e.getPlayer().getUniqueId());
         if (nexusPlayer != null) {
-            NexusAPI.getApi().getThreadFactory().runAsync(() -> {
+            NexusAPI.getApi().getScheduler().runTaskAsynchronously(() -> {
                 nexusPlayer.setLastLogout(System.currentTimeMillis());
                 long playTime = System.currentTimeMillis() - this.loginTimes.get(nexusPlayer.getUniqueId());
                 this.loginTimes.remove(nexusPlayer.getUniqueId());
@@ -181,7 +181,7 @@ public class ProxyPlayerManager extends PlayerManager implements Listener {
                 } else {
                     session.end();
                     
-                    if (session.getTimeOnline() >= TimeUnit.MINUTES.toMilliseconds(5)) {
+                    if (session.getTimeOnline() >= TimeUnit.MINUTES.toMillis(5)) {
                         Database database = NexusAPI.getApi().getPrimaryDatabase();
                         Table table = database.getTable(GameInfo.class);
                         String query = "select * from " + table.getName() + " where `gameStart`>='" + session.getStart() + "' and `gameEnd` <= '" + session.getEnd() + "' and `players` like '%" + nexusPlayer.getName() + "%';";
@@ -194,14 +194,14 @@ public class ProxyPlayerManager extends PlayerManager implements Listener {
                         }
                         
                         if (session.getGamesPlayed() > 0) {
-                            database.pushSilent(session);
+                            database.saveSilent(session);
                         }
                     }
                 }
                 this.sessions.remove(nexusPlayer.getUniqueId());
                 nexusPlayer.changeStat("playtime", playTime, StatOperator.ADD).push();
                 StatHelper.consolidateStats(nexusPlayer);
-                NexusAPI.getApi().getPrimaryDatabase().pushSilent(nexusPlayer);
+                NexusAPI.getApi().getPrimaryDatabase().saveSilent(nexusPlayer);
             });
             this.players.remove(nexusPlayer.getUniqueId());
             if (nexusPlayer.getRank().ordinal() <= Rank.MEDIA.ordinal()) {

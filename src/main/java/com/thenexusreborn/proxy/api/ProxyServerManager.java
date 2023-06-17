@@ -40,7 +40,7 @@ public class ProxyServerManager extends ServerManager {
         this.currentServer = new ServerInfo(multicraftId, ip, name, port, players, maxPlayers, hiddenPlayers, type, status, state);
         long id = plugin.getConfig().getLong("serverInfo.id");
         this.currentServer.setId(id);
-        NexusAPI.getApi().getPrimaryDatabase().pushSilent(this.currentServer);
+        NexusAPI.getApi().getPrimaryDatabase().saveSilent(this.currentServer);
         plugin.getConfig().set("serverInfo.id", this.currentServer.getId());
         plugin.saveConfig();
     }

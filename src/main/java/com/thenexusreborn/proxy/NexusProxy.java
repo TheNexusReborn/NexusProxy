@@ -1,8 +1,9 @@
 package com.thenexusreborn.proxy;
 
+import com.starmediadev.starlib.StarLib;
 import com.thenexusreborn.api.NexusAPI;
 import com.thenexusreborn.api.server.ServerInfo;
-import com.thenexusreborn.proxy.api.ProxyPlayerManager;
+import com.thenexusreborn.proxy.api.*;
 import com.thenexusreborn.proxy.cmds.*;
 import com.thenexusreborn.proxy.listener.ServerPingListener;
 import com.thenexusreborn.proxy.settings.MOTD;
@@ -112,7 +113,7 @@ public class NexusProxy extends Plugin {
             ServerInfo serverInfo = NexusAPI.getApi().getServerManager().getCurrentServer();
             serverInfo.setStatus("online");
             serverInfo.setPlayers(getProxy().getOnlineCount());
-            NexusAPI.getApi().getPrimaryDatabase().pushSilent(serverInfo);
+            NexusAPI.getApi().getPrimaryDatabase().saveSilent(serverInfo);
         }, 1L, 1L, TimeUnit.SECONDS);
     }
     
