@@ -1,5 +1,6 @@
 package com.thenexusreborn.proxy.api;
 
+
 import com.starmediadev.starlib.util.TimeUnit;
 import com.starmediadev.starsql.objects.*;
 import com.thenexusreborn.api.NexusAPI;
@@ -20,6 +21,7 @@ import net.md_5.bungee.event.EventHandler;
 import java.net.InetSocketAddress;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 public class ProxyPlayerManager extends PlayerManager implements Listener {
     
@@ -182,7 +184,7 @@ public class ProxyPlayerManager extends PlayerManager implements Listener {
                 } else {
                     session.end();
                     
-                    if (session.getTimeOnline() >= TimeUnit.MINUTES.toMilliseconds(5)) {
+                    if (session.getTimeOnline() >= TimeUnit.MINUTES.toMillis(5)) {
                         Database database = NexusAPI.getApi().getPrimaryDatabase();
                         Table table = database.getTable(GameInfo.class);
                         String query = "select * from " + table.getName() + " where `gameStart`>='" + session.getStart() + "' and `gameEnd` <= '" + session.getEnd() + "' and `players` like '%" + nexusPlayer.getName() + "%';";
