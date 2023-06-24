@@ -17,6 +17,8 @@
         <maven.plugin.jar.version>3.3.0</maven.plugin.jar.version>
         <maven.plugin.shade.version>3.4.1</maven.plugin.shade.version>
         <nexus.api.version>1.10.4-ALPHA</nexus.api.version>
+        <starclock.version>1.1-SNAPSHOT</starclock.version>
+        <starui.version>1.0-SNAPSHOT</starui.version>
     </properties>
 
     <build>
@@ -64,10 +66,6 @@
             <id>bungeecord-repo</id>
             <url>https://oss.sonatype.org/content/repositories/snapshots</url>
         </repository>
-        <repository>
-            <id>starmediadev</id>
-            <url>https://repo.starmediadev.com/snapshots/</url>
-        </repository>
     </repositories>
     
     <dependencies>
@@ -88,6 +86,18 @@
                     <artifactId>netty-all</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.starmediadev</groupId>
+            <artifactId>starclock</artifactId>
+            <version>${starclock.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.starmediadev</groupId>
+            <artifactId>starui</artifactId>
+            <version>${starui.version}</version>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 </project>
